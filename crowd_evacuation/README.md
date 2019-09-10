@@ -25,7 +25,8 @@ Then open your browser to [http://127.0.0.1:8521/](http://127.0.0.1:8521/) and p
 ## Files
 
 * ``run.py``: Launches a model visualization server.
-* ``model.py``: Contains the agent class, and the overall model class.
+* ``model.py``: Contains the overall model class.
+* ``agents.py``: Contains the agents classes.
 * ``server.py``: Defines classes for visualizing the model in the browser via Mesa's modular server, and instantiates a visualization server.
 
 ## Further Reading
