@@ -1,4 +1,13 @@
 # MultiAgentSystems
+Brief description <- **Insert here :)**
+## Frameworks
+
+For this project we will use the Mesa framework. It is a modular framework for building, analyzing and visualizing agent-based models.
+
+Its goal is to be the Python 3-based alternative to NetLogo, Repast, or MASON
+
+[Mesa - github](https://github.com/projectmesa/mesa)
+[Mesa - docs](https://mesa.readthedocs.io/en/master/overview.html)
 
 ## Useful Links and Papers
 
