@@ -1,0 +1,26 @@
+Agents
+    civilAgent()
+        attribute
+            knowledge_of_exits
+            position_of_entrance
+            strategy
+            willingness_to_follow_steward
+            (speed / age / gender / size)
+
+    fireAgent()
+
+    stewardAgent()
+
+Methods
+    shortest_path()
+    noisy_path()
+    flock_behaviour()
+    stupid_path()  # random movement?!
+    follow_steward()
+
+Model
+     position_exits
+     boundaries
+
+     no casualties
+     saved_people
