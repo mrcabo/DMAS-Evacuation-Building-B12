@@ -7,10 +7,9 @@ from mesa.visualization.UserParam import UserSettableParameter
 
 
 def agent_portrayal(agent):
-    portrayal = {"Shape": "circle",
-                 "Color": "red",
-                 "Filled": "true",
+    portrayal = {"Shape": "images/sheep2.png",
                  "Layer": 0,
+                 "scale": 1.5,
                  "r": 0.5}
 
     return portrayal
