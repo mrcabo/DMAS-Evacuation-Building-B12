@@ -7,25 +7,25 @@ class CivilianAgent(Agent):
     def __init__(self, unique_id, model, known_exits):
         super().__init__(unique_id, model)
 
-        self._known_exits = known_exits
-        self._strategy = "random"
-        self._willingness_to_follow_steward = random.uniform(0, 1)
-        self._speed = random.uniform(3, 10)
-        self._age = random.randrange(15, 65)
-        self._gender = random.choice(["M", "F"])
-        self._size = random.uniform(40, 100)
+        self.__known_exits = known_exits
+        self.__strategy = "random"
+        self.__willingness_to_follow_steward = random.uniform(0, 1)
+        self.__speed = random.uniform(3, 10)
+        self.__age = random.randrange(15, 65)
+        self.__gender = random.choice(["M", "F"])
+        self.__size = random.uniform(40, 100)
 
     def print_attributes(self):
       print('-' * 20)
       print("Agent ", self.unique_id)
       print('-' * 20)
-      print("Known exits: ", self._known_exits)
-      print("Strategy: ", self._strategy)
-      print("Willingness to follow steward: ", self._willingness_to_follow_steward)
-      print("Speed (m/s): ", self._speed)
-      print("Age (years): ", self._age)
-      print("Gender: ", self._gender)
-      print("Size (kg): ", self._size)
+      print("Known exits: ", self.__known_exits)
+      print("Strategy: ", self.__strategy)
+      print("Willingness to follow steward: ", self.__willingness_to_follow_steward)
+      print("Speed (m/s): ", self.__speed)
+      print("Age (years): ", self.__age)
+      print("Gender: ", self.__gender)
+      print("Size (kg): ", self.__size)
       print()
       print()
 
@@ -40,4 +40,11 @@ class CivilianAgent(Agent):
     def step(self):
         self.move()
         self.print_attributes()
+        self.shortest_path()
 
+    def __closest_exit():
+      pass
+
+    def __shortest_path(self):
+      pass
+    
