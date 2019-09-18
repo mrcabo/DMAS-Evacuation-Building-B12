@@ -2,7 +2,6 @@ Agents
     civilAgent()
         attribute
             knowledge_of_exits
-            position_of_entrance
             strategy
             willingness_to_follow_steward
             (speed / age / gender / size)
@@ -24,3 +23,24 @@ Model
 
      no casualties
      saved_people
+
+
+
+### wo 18th sept ###
+
+- Create agent WALL/environment/ and make a nice building (resize canvas grid size accordingly)
+
+- The knowledge of exits will be a list of exist coordinates (one can have knowledge of one or more exits)
+- Shortest path () function to the known closest exit. Try to travel diagonally so e.g. min (abs (x_(agent) - x_(exit)), abs (y_(agent) - y_(exit)))
+- noisy path (going to exit maybe the entrance, but with an inconsistent direction)
+
+
+- look_around() : look around in some range and get some information from the all around agents and make the decision/priority of egress based on the environment
+
+- interact(agent_id): sharing knowledge and/or share the same behaviour (omg trust me guys, I saw an exit there!!) flock
+
+- fire_getTheFuckOuttaHereee()  : the highest priority to run to the opposite/further way from the fire  (wtf the fire is coming here, run for my life)
+
+- Make some fire agent (copy from example)
+
+- Make crowd evacuation a module and instructions to run in README file (DIEGO)
