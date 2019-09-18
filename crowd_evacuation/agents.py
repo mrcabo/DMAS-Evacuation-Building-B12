@@ -4,11 +4,10 @@ import random
 
 class CivilianAgent(Agent):
     """ A civilian agent."""
-    def __init__(self, unique_id, model):
+    def __init__(self, unique_id, model, known_exits):
         super().__init__(unique_id, model)
 
-        self._knowledge_of_exits = random.choice([False, True])
-        self._position_of_entrance = None
+        self._known_exits = known_exits
         self._strategy = "random"
         self._willingness_to_follow_steward = random.uniform(0, 1)
         self._speed = random.uniform(3, 10)
@@ -20,8 +19,7 @@ class CivilianAgent(Agent):
       print('-' * 20)
       print("Agent ", self.unique_id)
       print('-' * 20)
-      print("Knowledge of exits: ", self._knowledge_of_exits)
-      print("Position of entrance: ", self._position_of_entrance)
+      print("Known exits: ", self._known_exits)
       print("Strategy: ", self._strategy)
       print("Willingness to follow steward: ", self._willingness_to_follow_steward)
       print("Speed (m/s): ", self._speed)

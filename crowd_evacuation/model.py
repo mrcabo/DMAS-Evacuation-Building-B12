@@ -19,7 +19,7 @@ class EvacuationModel(Model):
         )
         # Create agents
         for i in range(self.num_agents):
-            a = CivilianAgent(i, self)
+            a = CivilianAgent(i, self, [[0, 0]])
             self.schedule.add(a)
             # Add the agent to a random grid cell
             not_empty = True
