@@ -5,7 +5,6 @@ from mesa.datacollection import DataCollector
 
 from crowd_evacuation.agents import CivilianAgent
 
-
 class EvacuationModel(Model):
     """A model of the evacuation of a building
     """
@@ -20,15 +19,16 @@ class EvacuationModel(Model):
         # Create agents
         for i in range(self.num_agents):
             a = CivilianAgent(i, self)
-            self.schedule.add(a)
+            # self.schedule.add(a)
             # Add the agent to a random grid cell
             not_empty = True
-            while not_empty:
-                x = self.random.randrange(self.grid.width)
-                y = self.random.randrange(self.grid.height)
-                if self.grid.is_cell_empty((x, y)):
-                    not_empty = False
-                    self.grid.place_agent(a, (x, y))
+            self.grid.place_agent(a, (i,1))
+            # while not_empty:
+            #     x = self.random.randrange(self.grid.width)
+            #     y = self.random.randrange(self.grid.height)
+            #     if self.grid.is_cell_empty((x, y)):
+            #         not_empty = False
+            #         self.grid.place_agent(a, (x, y))
 
         self.running = True  # Set this to false when we want to finish simulation (e.g. all agents are out of building)
         self.datacollector.collect(self)
