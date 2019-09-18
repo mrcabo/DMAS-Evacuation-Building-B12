@@ -11,6 +11,7 @@ class EvacuationModel(Model):
     """
     def __init__(self, N=10, width=50, height=50):
         self.num_agents = N
+        self.pos_exits = []  # Position of every exit of the building
         self.grid = SingleGrid(height, width, False)  # TODO: simple Grid for now. Could be a ContinuousSpace ?
         self.schedule = RandomActivation(self)  # Every tick, agents move in a different random order
         self.datacollector = DataCollector(
