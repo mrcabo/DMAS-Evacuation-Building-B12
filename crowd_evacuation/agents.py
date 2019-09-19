@@ -17,3 +17,38 @@ class CivilianAgent(Agent):
     def step(self):
         self.move()
 
+
+class FireAgent(Agent):
+    """ Fire Agent """
+    def __init__(self, pos, model):
+        """
+        Create a new fire agent
+
+        Args:
+            pos: The tree's coordinates on the grid. Also it is the unique_id
+            model: standard model reference for agent.
+        """
+        super().__init__(pos, model)
+        self.pos = pos
+        self.condition = "On Fire"
+        self.burned_delay = 5  # How many iter. steps will a fire agent wait until infecting neighboring squares
+        self.delay_counter = 0
+
+    def step(self):
+        """
+        Fire agents "On Fire" will spread after a certain delay.
+        """
+        if (self.condition == "On Fire") and (self.delay_counter >= self.burned_delay):
+            fire_neighbors = self.model.grid.get_neighborhood(
+                self.pos, moore=True, include_center=False
+            )
+            for grid_space in fire_neighbors:
+                # We store all the spaces within 1-block distance from the fire.
+                # The fire will spread (create new agents) in the model class
+                self.model.fire_spread_pos.append(grid_space)
+            self.condition = "Burned Out"
+        elif self.condition == "On Fire":
+            self.delay_counter += 1
+
+    def get_pos(self):
+        return self.pos
