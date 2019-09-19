@@ -2,7 +2,7 @@ from mesa import Agent
 
 
 class CivilianAgent(Agent):
-    """ An civilian agent."""
+    """ A civilian agent."""
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
@@ -16,4 +16,17 @@ class CivilianAgent(Agent):
 
     def step(self):
         self.move()
+
+
+class WallAgent(Agent):
+    """ A wall agent."""
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+
+class ExitAgent(Agent):
+    """ An emergency agent."""
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
 
