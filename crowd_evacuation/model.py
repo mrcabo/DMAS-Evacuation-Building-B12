@@ -24,9 +24,11 @@ class EvacuationModel(Model):
         self.draw_environment()
 
         # Create fire DEBUG
-        fire_agent = FireAgent((0, 0), self)
-        self.schedule.add(fire_agent)
-        self.grid.place_agent(fire_agent, (0, 0))
+        fire_initial_pos = [(2, 2)]
+        for pos in fire_initial_pos:
+            fire_agent = FireAgent(pos, self)
+            self.schedule.add(fire_agent)
+            self.grid.place_agent(fire_agent, pos)
 
         # Create agents
         for i in range(self.num_agents):

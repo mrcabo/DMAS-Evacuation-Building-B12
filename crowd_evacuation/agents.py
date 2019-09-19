@@ -95,7 +95,7 @@ class CivilianAgent(Agent):
         surround_objects = self.__looking_around()
         for neighbouring_object in surround_objects:
             if isinstance(neighbouring_object, FireAgent):
-                self.__fire_get_the_heck_outta_here(self, neighbouring_object)
+                self.__fire_get_the_heck_outta_here(neighbouring_object)
 
         if self.__closest_exit is None:
             self.__determine_closest_exit()
@@ -156,4 +156,9 @@ class CivilianAgent(Agent):
         my_x, my_y = self.pos
         opposite_direction = (my_x + (my_x - fire.pos[0]), my_y + (my_y - fire.pos[1]))
 
+        # TODO: It's not checking if the position is empty before moving agent,
+        #  program crashes. Also, if agent is sourrounded by multiple FireAgents,
+        #  this func will be called multiple times in a row. I think the whole array
+        #  of neighbors should be passed as argument and here pick only ONE fire
+        #  agent from where to escape.
         self.model.grid.move_agent(self, opposite_direction)
