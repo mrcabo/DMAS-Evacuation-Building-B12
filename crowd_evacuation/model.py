@@ -3,11 +3,13 @@ from mesa.time import RandomActivation
 from mesa.space import SingleGrid
 from mesa.datacollection import DataCollector
 
-from crowd_evacuation.agents import CivilianAgent, FireAgent
+from crowd_evacuation.agents import CivilianAgent, FireAgent, StewardAgent
+
 
 class EvacuationModel(Model):
     """A model of the evacuation of a building
     """
+
     def __init__(self, N=10, width=50, height=50):
         self.num_agents = N
         self.pos_exits = []  # Position of every exit of the building
@@ -51,11 +53,21 @@ class EvacuationModel(Model):
                 self.grid.place_agent(new_fire, pos)
 
         self.fire_spread_pos = []
-
         # collect data
         self.datacollector.collect(self)
 
-    # def run_model(self, n):
-    #     for i in range(n):
-    #         self.step()
+        # Halt if no more agents in the building
+        if self.count_agents(self) == 0:
+            self.running = False
 
+    @staticmethod
+    def count_agents(model):
+        """
+        Helper method to count agents alive and still in the building.
+        """
+        count = 0
+        for agent in model.schedule.agents:
+            agent_type = type(agent)
+            if (agent_type == CivilianAgent) or (agent_type == StewardAgent):
+                count += 1
+        return count
