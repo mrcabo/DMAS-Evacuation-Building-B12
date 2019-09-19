@@ -66,5 +66,17 @@ class CivilianAgent(Agent):
         del possible_steps[distances.index(min(distances))]
         del distances[distances.index(min(distances))]
 
+    # __take_random_path: Takes a random path, ignoring the exit.
+    def __take_random_path(self):
+      possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False)
+      
+      # Find the closest available random position around the agent and move the agent there.
+      while possible_steps:
+        new_position = self.random.choice(possible_steps)
+        if self.model.grid.is_cell_empty(new_position):
+          self.model.grid.move_agent(self, new_position)
+          break
+        del possible_steps[possible_steps.index(new_position)]
+
     def __reached_exit(self):
       return self.pos == self.__closest_exit
