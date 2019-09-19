@@ -1,6 +1,27 @@
 from mesa import Agent
 import random
 
+class StewardAgent(Agent):
+    def __init__(self, unique_id, model, known_exits):
+        super().__init__(unique_id, model)
+
+        self.__known_exits = known_exits
+
+class WallAgent(Agent):
+    """ A wall agent."""
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+class FireAgent(Agent):
+    """ A wall agent."""
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+
+class ExitAgent(Agent):
+    """ An emergency agent."""
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
 
 class CivilianAgent(Agent):
 
@@ -33,6 +54,11 @@ class CivilianAgent(Agent):
 
     def step(self):
         self.print_attributes()
+
+        surround_objects = self.__looking_around()
+        for neighbouring_object in surround_objects:
+            if isinstance(neighbouring_object, FireAgent):
+                self.__fire_getTheFuckOuttaHereee(self, neighbouring_object)
 
         if self.__closest_exit is None:
           self.__determine_closest_exit()
@@ -80,3 +106,16 @@ class CivilianAgent(Agent):
 
     def __reached_exit(self):
       return self.pos == self.__closest_exit
+
+    # __looking_around: an agents look around in some range and find out other agents.
+    def __looking_around(self):
+        # the list of objects surrounding an agent
+        surroundings = self.model.grid. get_neighbors(self.pos, moore=True, include_center=False, radius=2) # 5x5 range, exclude the center where the agent is standing
+        return surroundings
+
+    def __fire_getTheFuckOuttaHereee(self, fire):
+        # move towards the opposite direction of the fire
+        my_x, my_y = self.pos
+        opposite_direction = (my_x + (my_x - fire.pos[0]), my_y + (my_y - fire.pos[1]))
+
+        self.model.grid.move_agent(self, opposite_direction)
