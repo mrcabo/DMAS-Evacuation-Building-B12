@@ -5,7 +5,7 @@ from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.modules import ChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
-from crowd_evacuation.agents import CivilianAgent, FireAgent
+from crowd_evacuation.agents import CivilianAgent, FireAgent, WallAgent, ExitAgent
 
 COLORS_FIRE = {"On Fire": "#880000",
                "Burned Out": "#000000"}
@@ -33,6 +33,27 @@ def agent_portrayal(agent):
         portrayal["Filled"] = "true"
         portrayal["Layer"] = 2
 
+    if type(agent) is WallAgent:
+        portrayal = {"Shape": "rect",
+                     "Color": "black",
+                     "w": 0.8,
+                     "h": 0.8,
+                     "Filled": "true",
+                     "Layer": 0}
+    elif type(agent) is CivilianAgent:
+        portrayal = {"Shape": "circle",
+                     "Color": "blue",
+                     "Filled": "true",
+                     "Layer": 0,
+                     "r": 0.8}
+    elif type(agent) is ExitAgent :
+        portrayal = {"Shape": "images/emergency.png",
+                     "Color": "green",
+                     "w": 0.8,
+                     "h": 0.8,
+                     "Filled": "true",
+                     "Layer": 0,
+                     "r": 0.8}
     return portrayal
 
 

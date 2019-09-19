@@ -3,7 +3,7 @@ from mesa.time import RandomActivation
 from mesa.space import SingleGrid
 from mesa.datacollection import DataCollector
 
-from crowd_evacuation.agents import CivilianAgent, FireAgent, StewardAgent
+from crowd_evacuation.agents import CivilianAgent, FireAgent, StewardAgent, WallAgent, ExitAgent
 
 
 class EvacuationModel(Model):
@@ -21,6 +21,8 @@ class EvacuationModel(Model):
             agent_reporters={"Position": "pos"}
         )
 
+        self.draw_environment()
+
         # Create fire DEBUG
         fire_agent = FireAgent((0, 0), self)
         self.schedule.add(fire_agent)
@@ -33,8 +35,8 @@ class EvacuationModel(Model):
             # Add the agent to a random grid cell
             not_empty = True
             while not_empty:
-                x = self.random.randrange(self.grid.width)
-                y = self.random.randrange(self.grid.height)
+                x = self.random.randrange(2, self.grid.width-3)
+                y = self.random.randrange(2, self.grid.height-3)
                 if self.grid.is_cell_empty((x, y)):
                     not_empty = False
                     self.grid.place_agent(a, (x, y))
@@ -59,6 +61,41 @@ class EvacuationModel(Model):
         # Halt if no more agents in the building
         if self.count_agents(self) == 0:
             self.running = False
+    def draw_environment(self):
+        for i in range(2, self.grid.width-2):  # draw lower wall
+            self.draw_wall(i, 1, i)
+
+        for i in range(2, self.grid.width-2):  # draw upper wall
+            self.draw_wall(i, self.grid.height-2, i)
+
+        for i in range(1, 10):  # draw left wall
+            self.draw_wall(1, i, i)
+
+        for i in range(10, 15):    # draw emergency exits
+            self.draw_exits(1, i, i)
+
+        for i in range(15, self.grid.height-1):  # draw left wall
+            self.draw_wall(1, i, i)
+
+        for i in range(1, self.grid.height - 1):  # draw right wall
+            self.draw_wall(self.grid.width-2, i, i)
+
+    def draw_wall(self, x, y, i):
+        w = WallAgent(i, self)
+        not_empty = True
+        while not_empty:
+            if self.grid.is_cell_empty((x, y)):
+                not_empty = False
+                self.grid.place_agent(w, (x, y))
+
+    def draw_exits(self, x, y, i):
+        e = ExitAgent(i, self)
+        not_empty = True
+        while not_empty:
+            if self.grid.is_cell_empty((x, y)):
+                not_empty = False
+                self.grid.place_agent(e, (x, y))
+
 
     @staticmethod
     def count_agents(model):
