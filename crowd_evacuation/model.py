@@ -5,7 +5,6 @@ from mesa.datacollection import DataCollector
 
 from crowd_evacuation.agents import CivilianAgent, FireAgent
 
-
 class EvacuationModel(Model):
     """A model of the evacuation of a building
     """
@@ -27,7 +26,7 @@ class EvacuationModel(Model):
 
         # Create agents
         for i in range(self.num_agents):
-            a = CivilianAgent(i, self)
+            a = CivilianAgent(i, self, [(10, 0), (10, 30), (20, 20), (15, 3), (5, 4)])
             self.schedule.add(a)
             # Add the agent to a random grid cell
             not_empty = True
