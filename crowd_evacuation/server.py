@@ -1,17 +1,35 @@
 from mesa.visualization.ModularVisualization import ModularServer
 from .model import EvacuationModel
-
+from crowd_evacuation.agents import CivilianAgent
+from crowd_evacuation.agents import WallAgent
+from crowd_evacuation.agents import ExitAgent
 from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.modules import ChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
 
 def agent_portrayal(agent):
-    portrayal = {"Shape": "images/sheep2.png",
-                 "Layer": 0,
-                 "scale": 1.5,
-                 "r": 0.5}
-
+    if type(agent) is WallAgent:
+        portrayal = {"Shape": "rect",
+                     "Color": "black",
+                     "w": 0.8,
+                     "h": 0.8,
+                     "Filled": "true",
+                     "Layer": 0}
+    elif type(agent) is CivilianAgent:
+        portrayal = {"Shape": "circle",
+                     "Color": "blue",
+                     "Filled": "true",
+                     "Layer": 0,
+                     "r": 0.8}
+    elif type(agent) is ExitAgent :
+        portrayal = {"Shape": "images/emergency.png",
+                     "Color": "green",
+                     "w": 0.8,
+                     "h": 0.8,
+                     "Filled": "true",
+                     "Layer": 0,
+                     "r": 0.8}
     return portrayal
 
 
