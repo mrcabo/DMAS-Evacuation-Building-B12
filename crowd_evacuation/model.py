@@ -6,10 +6,7 @@ from mesa.datacollection import DataCollector
 from crowd_evacuation.agents import CivilianAgent
 from crowd_evacuation.agents import WallAgent
 from crowd_evacuation.agents import ExitAgent
-<<<<<<< HEAD
 
-=======
->>>>>>> master
 
 class EvacuationModel(Model):
     """A model of the evacuation of a building
