@@ -44,7 +44,7 @@ def agent_portrayal(agent):
         portrayal["Layer"] = 2
 
     elif type(agent) is ExitAgent:
-        portrayal["Shape"] = "images/emergency.png"
+        portrayal["Shape"] = "rect"
         portrayal["Color"] = "green"
         portrayal["Filled"] = "true"
         portrayal["w"] = 0.8

@@ -65,11 +65,23 @@ class EvacuationModel(Model):
             self.running = False
 
     def draw_environment(self):
-        for i in range(2, self.grid.width-2):  # draw lower wall
+        for i in range(2, 20):  # draw lower wall
             self.draw_wall(i, 1, i)
 
-        for i in range(2, self.grid.width-2):  # draw upper wall
+        for i in range(20, 25):    # draw emergency exits
+            self.draw_exits(i, 1, i)
+
+        for i in range(25, self.grid.width-2):  # draw lower wall
+            self.draw_wall(i, 1, i)
+
+        for i in range(2, 20):  # draw upper wall
             self.draw_wall(i, self.grid.height-2, i)
+
+        for i in range(20, 25):  # draw emergency exits
+            self.draw_exits(i, self.grid.height-2, i)
+
+        for i in range(25, self.grid.width - 2):  # draw upper wall
+            self.draw_wall(i, self.grid.height - 2, i)
 
         for i in range(1, 10):  # draw left wall
             self.draw_wall(1, i, i)
@@ -80,7 +92,13 @@ class EvacuationModel(Model):
         for i in range(15, self.grid.height-1):  # draw left wall
             self.draw_wall(1, i, i)
 
-        for i in range(1, self.grid.height - 1):  # draw right wall
+        for i in range(1, 30):  # draw right wall
+            self.draw_wall(self.grid.width - 2, i, i)
+
+        for i in range(30, 35):    # draw emergency exits
+            self.draw_exits(self.grid.width - 2, i, i)
+
+        for i in range(35, self.grid.height - 1):  # draw right wall
             self.draw_wall(self.grid.width-2, i, i)
 
     def draw_wall(self, x, y, i):
