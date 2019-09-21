@@ -23,7 +23,7 @@ def agent_portrayal(agent):
                      "Layer": 0,
                      "r": 0.8}
     elif type(agent) is ExitAgent :
-        portrayal = {"Shape": "images/emergency.png",
+        portrayal = {"Shape": "rect",
                      "Color": "green",
                      "w": 0.8,
                      "h": 0.8,
