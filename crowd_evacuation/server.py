@@ -1,16 +1,24 @@
 from mesa.visualization.ModularVisualization import ModularServer
 from .model import EvacuationModel
-from crowd_evacuation.agents import CivilianAgent
-from crowd_evacuation.agents import WallAgent
-from crowd_evacuation.agents import ExitAgent
-from mesa.visualization.modules import CanvasGrid
-from mesa.visualization.modules import ChartModule
+from mesa.visualization.modules import CanvasGrid, TextElement
 from mesa.visualization.UserParam import UserSettableParameter
 
 from crowd_evacuation.agents import CivilianAgent, FireAgent, WallAgent, ExitAgent
 
 COLORS_FIRE = {"On Fire": "#880000",
                "Burned Out": "#000000"}
+
+
+class HelloWorldElement(TextElement):
+    """
+    Display a text count of how many happy agents there are.
+    """
+
+    def __init__(self):
+        pass
+
+    def render(self, model):
+        return "Hello World!"
 
 
 def agent_portrayal(agent):
@@ -55,6 +63,7 @@ def agent_portrayal(agent):
     return portrayal
 
 
+happy_element = HelloWorldElement()
 grid = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 
 model_params = {
@@ -64,5 +73,5 @@ model_params = {
     "height": 50
 }
 
-server = ModularServer(EvacuationModel, [grid], "Evacuation model", model_params)
+server = ModularServer(EvacuationModel, [grid, happy_element], "Evacuation model", model_params)
 server.port = 8521
