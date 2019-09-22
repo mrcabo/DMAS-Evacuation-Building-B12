@@ -1,5 +1,6 @@
 from mesa import Agent
 import random
+import numpy as np
 
 
 class StewardAgent(Agent):
@@ -154,12 +155,18 @@ class CivilianAgent(Agent):
     def __fire_get_the_heck_outta_here(self, fire):
         # move towards the opposite direction of the fire
         my_x, my_y = self.pos
-        opposite_direction = (my_x + (my_x - fire.pos[0]), my_y + (my_y - fire.pos[1]))
-
+        opposite_direction = np.asarray([(my_x - fire.pos[0]), (my_y - fire.pos[1])])  # direction of escape
+        # We normalize the opposite_direction vector
+        norm_dir = np.linalg.norm(opposite_direction)
+        norm_dir = np.divide(opposite_direction, norm_dir)
+        # And move 1 cell towards that direction
+        new_pos = norm_dir + (my_x, my_y)
+        new_pos = np.round(new_pos).astype(int)
 
         # TODO: It's not checking if the position is empty before moving agent,
         #  program crashes. Also, if agent is sourrounded by multiple FireAgents,
         #  this func will be called multiple times in a row. I think the whole array
         #  of neighbors should be passed as argument and here pick only ONE fire
         #  agent from where to escape.
-        self.model.grid.move_agent(self, opposite_direction)
+        if self.model.grid.is_cell_empty(new_pos.tolist()):
+            self.model.grid.move_agent(self, new_pos.tolist())
