@@ -30,9 +30,18 @@ class EvacuationModel(Model):
             self.schedule.add(fire_agent)
             self.grid.place_agent(fire_agent, pos)
 
+        known_exits = []
+        for i in range(20, 25):    # draw emergency exits
+            known_exits.append((i, 2))
+            known_exits.append((i, self.grid.width - 3))
+        for i in range(10, 15):    # draw emergency exits
+            known_exits.append((2, i))
+        for i in range(30, 35):    # draw emergency exits
+            known_exits.append((self.grid.width - 3, i))
+
         # Create agents
         for i in range(self.num_agents):
-            a = CivilianAgent(i, self, [(10, 0), (10, 30), (20, 20), (15, 3), (5, 4)])
+            a = CivilianAgent(i, self, known_exits)
             self.schedule.add(a)
             # Add the agent to a random grid cell
             not_empty = True
