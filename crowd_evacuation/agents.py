@@ -1,6 +1,13 @@
+from enum import Enum
+
 from mesa import Agent
 import random
 import numpy as np
+
+
+class Reasons(Enum):
+    SAVED = 1
+    KILLED_BY_FIRE = 2
 
 
 class StewardAgent(Agent):
@@ -91,7 +98,7 @@ class CivilianAgent(Agent):
         print()
 
     def step(self):
-        self.print_attributes()
+        # self.print_attributes()
 
         surround_objects = self.__looking_around()
         for neighbouring_object in surround_objects:
@@ -104,9 +111,8 @@ class CivilianAgent(Agent):
         self.__take_shortest_path()
 
         # If the agent reaches the exit, remove the agent from the schedule and the grid.
-        if (self.__reached_exit()):
-            self.model.schedule.remove(self)
-            self.model.grid.remove_agent(self)
+        if self.__reached_exit():
+            self.model.remove_agent(self, Reasons.SAVED)
 
     def __absolute_distance(self, x, y):
         return abs(x[0] - y[0]) + abs(x[1] - y[1])
