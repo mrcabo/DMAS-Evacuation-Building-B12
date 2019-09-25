@@ -1,6 +1,6 @@
 from mesa.visualization.ModularVisualization import ModularServer
 from .model import EvacuationModel
-from mesa.visualization.modules import CanvasGrid, TextElement
+from mesa.visualization.modules import CanvasGrid, TextElement, ChartModule, PieChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
 from crowd_evacuation.agents import CivilianAgent, FireAgent, WallAgent, ExitAgent
@@ -9,20 +9,33 @@ COLORS_FIRE = {"On Fire": "#880000",
                "Burned Out": "#000000"}
 
 
-class HelloWorldElement(TextElement):
+class IntroductionText(TextElement):
     """
-    Display a text count of how many happy agents there are.
+    Display a text say hello .
     """
 
     def __init__(self):
         pass
 
     def render(self, model):
-        return "Hello World!"
+        text = '''<h1>Welcome to our evacuation
+        simulation!</h1><p>Click Start to enjoy an entire simulation cycle,
+        or click Step to calmly analyze what is happening. You can check out the
+        code and report for this project
+        <a href="https://github.com/mrcabo/DMAS-Evacuation-Building-B12">here</a>.</p>'''
+
+        return text
 
 
 def agent_portrayal(agent):
+    """
+    Determines how an agent will be drawn in the grid
+    Args:
+        agent (Agent): agent to be drawn
 
+    Returns:
+        Dictionary with the parameters required to draw agent
+    """
     if agent is None:
         return
 
@@ -63,7 +76,14 @@ def agent_portrayal(agent):
     return portrayal
 
 
-happy_element = HelloWorldElement()
+line_chart = ChartModule([{"Label": "Agents alive", "Color": "gray"},
+                          {"Label": "Agents killed", "Color": "red"},
+                          {"Label": "Agents saved", "Color": "green"}])
+pie_chart = PieChartModule([{"Label": "Agents alive", "Color": "gray"},
+                            {"Label": "Agents killed", "Color": "red"},
+                            {"Label": "Agents saved", "Color": "green"}])
+
+introduction = IntroductionText()
 grid = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 
 model_params = {
@@ -73,5 +93,8 @@ model_params = {
     "height": 50
 }
 
-server = ModularServer(EvacuationModel, [grid, happy_element], "Evacuation model", model_params)
+server = ModularServer(EvacuationModel,
+                       [introduction, grid, line_chart, pie_chart],
+                       "Evacuation model",
+                       model_params)
 server.port = 8521

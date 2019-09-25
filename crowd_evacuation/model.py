@@ -21,8 +21,9 @@ class EvacuationModel(Model):
         self.grid = SingleGrid(height, width, False)
         self.schedule = RandomActivation(self)  # Every tick, agents move in a different random order
         self.datacollector = DataCollector(
-            model_reporters={"N": "num_agents"},
-            agent_reporters={"Position": "pos"}
+            model_reporters={"Agents alive": "agents_alive",
+                             "Agents killed": "agents_killed",
+                             "Agents saved": "agents_saved"}
         )
 
         self.draw_environment()
@@ -68,7 +69,6 @@ class EvacuationModel(Model):
                 new_fire = FireAgent(pos, self)
                 self.schedule.add(new_fire)
                 self.grid.place_agent(new_fire, pos)
-
         self.fire_spread_pos = []
         # collect data
         self.datacollector.collect(self)
