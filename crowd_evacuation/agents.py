@@ -105,21 +105,25 @@ class CivilianAgent(Agent):
 
         surround_objects = self.__looking_around()
         possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False)
+        contacting_objects = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
 
-        # Check if there is a fire around the agent and remove the agent from the schedule and
-        # the grid if the agent is not able to move. Else, move the agent away from the fire.
-        if any(isinstance(x, FireAgent) for x in surround_objects):
-            if self.__cannot_move(possible_steps):
-                self.model.remove_agent(self, Reasons.KILLED_BY_FIRE)
+        # If there is a fire directly next to the agent and the agent cannot move, remove the agent
+        # from the schedule and the grid.
+        if any(isinstance(x, FireAgent) for x in contacting_objects) and self.__cannot_move(possible_steps):
+            self.model.remove_agent(self, Reasons.KILLED_BY_FIRE)
+            return
+
+        # Else if there is any fire in the objects surrounding the agent, move the agent away from the fire.
+        for neighbouring_object in surround_objects:
+            if isinstance(neighbouring_object, FireAgent):
+                self.__fire_get_the_heck_outta_here(neighbouring_object)
                 return
-            for neighbouring_object in surround_objects:
-                if isinstance(neighbouring_object, FireAgent):
-                    self.__fire_get_the_heck_outta_here(neighbouring_object)
-        # If there is no immediate danger for the agent, move the agent towards the closest exit.
-        else:
-            self.__take_shortest_path(possible_steps)
-            if self.__reached_exit():
-                self.model.remove_agent(self, Reasons.SAVED)
+        
+        # Else if there is no immediate danger for the agent, move the agent towards the closest exit. Remove
+        # the agent from the schedule and the grid if the agent has exited the building.
+        self.__take_shortest_path(possible_steps)
+        if self.__reached_exit():
+            self.model.remove_agent(self, Reasons.SAVED)
   
     def __absolute_distance(self, x, y):
         return abs(x[0] - y[0]) + abs(x[1] - y[1])
