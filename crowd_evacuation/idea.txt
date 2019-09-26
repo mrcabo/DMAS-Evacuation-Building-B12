@@ -46,3 +46,22 @@ Model
 - Make some fire agent (copy from example)
 
 - Make crowd evacuation a module and instructions to run in README file (DIEGO)
+
+
+### wo 25th sept ###
+
+- Create legend of visualization to explain the components of the model (LUCIA)
+- Vary the size (and color?) of agents based on their properties (LUCIA)
+- Statistics (e.g. how many agents died, how many got away) dynamically on the web interface (DIEGO) - CONNECTED WITH MODEL KILL REMOVE AGENTS ETC
+- Rename the repository with a meaningful name (e.g. group_name_topic) (DIEGO) - Done
+
+- Fix the fire function to behave like (e.g. take shortest path) (SOHYUNG)
+- look_around() : look around in some range and get some information from the all around agents and make the decision/priority of egress based on the environment (SOHYUNG)
+- interact(agent_id): sharing knowledge and/or share the same behaviour (omg trust me guys, I saw an exit there!!) flock (ANDREAS)
+- reached exit make public (ANDREAS)
+- fire agent kill function (ANDREAS)
+- comment out print attributes (ANDREAS)
+
+- Initialize report with bullet points (EVERYONE)
+
+- Use map of actual building somehow (difficult)
