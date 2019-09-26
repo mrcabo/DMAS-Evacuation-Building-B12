@@ -66,7 +66,7 @@ class CivilianAgent(Agent):
     def __init__(self, unique_id, model, known_exits):
         super().__init__(unique_id, model)
 
-        self.__known_exits = known_exits
+        self.__known_exits = known_exits  #  (x, y) pairs
         self.__strategy = "random"
         self.__willingness_to_follow_steward = random.uniform(0, 1)
         self.__speed = random.uniform(3, 10)
@@ -93,10 +93,14 @@ class CivilianAgent(Agent):
     def step(self):
         self.print_attributes()
 
-        surround_objects = self.__looking_around()
-        for neighbouring_object in surround_objects:
-            if isinstance(neighbouring_object, FireAgent):
-                self.__fire_get_the_heck_outta_here(neighbouring_object)
+        # First, an agent should look around for the surrounding agents & possible moving positions
+        # to make optimal egress movement
+        surround_objects, possible_moving_range = self.__looking_around()
+        print("surrounding objects : ", surround_objects)
+        print("possible moving range : ", possible_moving_range)
+
+        if isinstance(surround_objects, FireAgent):
+            self.__fire_get_the_heck_outta_here(self, FireAgent.pos)
 
         if self.__closest_exit is None:
             self.__determine_closest_exit()
@@ -145,28 +149,41 @@ class CivilianAgent(Agent):
     def __reached_exit(self):
         return self.pos == self.__closest_exit
 
-    # __looking_around: an agents look around in some range and find out other agents.
+    # __looking_around: an agents look around in visible range(5X5) and find out other agents.
     def __looking_around(self):
-        # the list of objects surrounding an agent
-        surroundings = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False,
-                                                     radius=2)  # 5x5 range, exclude the center where the agent is standing
-        return surroundings
+        # the list of objects surrounding an agent, 5x5 range, exclude the center where the agent is standing
+        surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=2)
+        possible_moving_range = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False, radius=1)
+
+        # also checking where this poor agent can move to survive
+        possible_moving_position = []
+        for position in possible_moving_range:
+            if self.model.grid.is_cell_empty(position):
+                possible_moving_position.append(position)
+
+        return surrounding_agents, possible_moving_position
+
+    def __egress_movement(self, possible_moving_range):
+        # an agent can move one grid at a tick / time step
+        # -> it means 3 x 3 range should be checked to find empty place to move
+
+        return
 
     def __fire_get_the_heck_outta_here(self, fire):
         # move towards the opposite direction of the fire
         my_x, my_y = self.pos
         opposite_direction = np.asarray([(my_x - fire.pos[0]), (my_y - fire.pos[1])])  # direction of escape
-        # We normalize the opposite_direction vector
+        # We normalize and find the unit vector of opposite_direction
         norm_dir = np.linalg.norm(opposite_direction)
         norm_dir = np.divide(opposite_direction, norm_dir)
         # And move 1 cell towards that direction
         new_pos = norm_dir + (my_x, my_y)
         new_pos = np.round(new_pos).astype(int)
-
+        self.model.grid.move_agent(self, new_pos)
         # TODO: It's not checking if the position is empty before moving agent,
         #  program crashes. Also, if agent is sourrounded by multiple FireAgents,
         #  this func will be called multiple times in a row. I think the whole array
         #  of neighbors should be passed as argument and here pick only ONE fire
         #  agent from where to escape.
-        if self.model.grid.is_cell_empty(new_pos.tolist()):
-            self.model.grid.move_agent(self, new_pos.tolist())
+        #if self.model.grid.is_cell_empty(new_pos.tolist()):
+        #    self.model.grid.move_agent(self, new_pos.tolist())
