@@ -98,22 +98,29 @@ class CivilianAgent(Agent):
         print()
 
     def step(self):
-        # self.print_attributes()
-
-        surround_objects = self.__looking_around()
-        for neighbouring_object in surround_objects:
-            if isinstance(neighbouring_object, FireAgent):
-                self.__fire_get_the_heck_outta_here(neighbouring_object)
+        self.print_attributes()
 
         if self.__closest_exit is None:
             self.__determine_closest_exit()
 
-        self.__take_shortest_path()
+        surround_objects = self.__looking_around()
+        possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False)
 
-        # If the agent reaches the exit, remove the agent from the schedule and the grid.
-        if self.__reached_exit():
-            self.model.remove_agent(self, Reasons.SAVED)
-
+        # Check if there is a fire around the agent and remove the agent from the schedule and
+        # the grid if the agent is not able to move. Else, move the agent away from the fire.
+        if any(isinstance(x, FireAgent) for x in surround_objects):
+            if self.__cannot_move(possible_steps):
+                self.model.remove_agent(self, Reasons.KILLED_BY_FIRE)
+                return
+            for neighbouring_object in surround_objects:
+                if isinstance(neighbouring_object, FireAgent):
+                    self.__fire_get_the_heck_outta_here(neighbouring_object)
+        # If there is no immediate danger for the agent, move the agent towards the closest exit.
+        else:
+            self.__take_shortest_path(possible_steps)
+            if self.__reached_exit():
+                self.model.remove_agent(self, Reasons.SAVED)
+  
     def __absolute_distance(self, x, y):
         return abs(x[0] - y[0]) + abs(x[1] - y[1])
 
@@ -123,8 +130,7 @@ class CivilianAgent(Agent):
         self.__closest_exit = self.__known_exits[distances.index(min(distances))]
 
     # __take_shortest_path: Takes the shortest path to the closest exit.
-    def __take_shortest_path(self):
-        possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False)
+    def __take_shortest_path(self, possible_steps):
         distances = [self.__absolute_distance(self.__closest_exit, x) for x in possible_steps]
 
         # Find the closest available position to the closest exit around the agent and move the agent there.
@@ -137,9 +143,7 @@ class CivilianAgent(Agent):
             del distances[distances.index(min(distances))]
 
     # __take_random_path: Takes a random path, ignoring the exit.
-    def __take_random_path(self):
-        possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False)
-
+    def __take_random_path(self, possible_steps):
         # Find the closest available random position around the agent and move the agent there.
         while possible_steps:
             new_position = self.random.choice(possible_steps)
@@ -150,6 +154,14 @@ class CivilianAgent(Agent):
 
     def __reached_exit(self):
         return self.pos == self.__closest_exit
+
+    # __cannot_move: Returns True if there is no possible step the agent can make, otherwise it
+    # returns False.
+    def __cannot_move(self, possible_steps):
+        for x in possible_steps:
+          if self.model.grid.is_cell_empty(x):
+            return False
+        return True
 
     # __looking_around: an agents look around in some range and find out other agents.
     def __looking_around(self):

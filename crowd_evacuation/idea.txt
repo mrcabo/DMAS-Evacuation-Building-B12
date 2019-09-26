@@ -58,7 +58,7 @@ Model
 - Fix the fire function to behave like (e.g. take shortest path) (SOHYUNG)
 - look_around() : look around in some range and get some information from the all around agents and make the decision/priority of egress based on the environment (SOHYUNG)
 - interact(agent_id): sharing knowledge and/or share the same behaviour (omg trust me guys, I saw an exit there!!) flock (ANDREAS)
-- reached exit make public (ANDREAS)
+- reached exit calls remove_agent from model (ANDREAS)
 - fire agent kill function (ANDREAS)
 - comment out print attributes (ANDREAS)
 
