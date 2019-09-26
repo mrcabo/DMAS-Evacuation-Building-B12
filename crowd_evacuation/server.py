@@ -1,30 +1,14 @@
 from mesa.visualization.ModularVisualization import ModularServer
 from .model import EvacuationModel
-from mesa.visualization.modules import CanvasGrid, TextElement, ChartModule, PieChartModule
+from mesa.visualization.modules import CanvasGrid,TextElement, ChartModule, PieChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
 from crowd_evacuation.agents import CivilianAgent, FireAgent, WallAgent, ExitAgent
+from crowd_evacuation.ModelLegend import ModelLegend
+from crowd_evacuation.IntroductionText import IntroductionText
 
 COLORS_FIRE = {"On Fire": "#880000",
                "Burned Out": "#000000"}
-
-
-class IntroductionText(TextElement):
-    """
-    Display a text say hello .
-    """
-
-    def __init__(self):
-        pass
-
-    def render(self, model):
-        text = '''<h1>Welcome to our evacuation
-        simulation!</h1><p>Click Start to enjoy an entire simulation cycle,
-        or click Step to calmly analyze what is happening. You can check out the
-        code and report for this project
-        <a href="https://github.com/mrcabo/DMAS-Evacuation-Building-B12">here</a>.</p>'''
-
-        return text
 
 
 def agent_portrayal(agent):
@@ -43,9 +27,12 @@ def agent_portrayal(agent):
 
     if type(agent) is CivilianAgent:
         portrayal["Shape"] = "circle"
-        portrayal["Color"] = "blue"
+        if agent.gender == 'M':
+            portrayal["Color"] = "blue"
+        else:
+            portrayal["Color"] = "purple"
         portrayal["Filled"] = "true"
-        portrayal["r"] = 0.5
+        portrayal["r"] = agent.size/100
         portrayal["Layer"] = 1
 
     elif type(agent) is WallAgent:
@@ -85,6 +72,7 @@ pie_chart = PieChartModule([{"Label": "Agents alive", "Color": "gray"},
 
 introduction = IntroductionText()
 grid = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
+legend = ModelLegend()
 
 model_params = {
     "N": UserSettableParameter('slider', "Number of agents", 400, 2, 2000, 1,
@@ -93,8 +81,9 @@ model_params = {
     "height": 50
 }
 
+
 server = ModularServer(EvacuationModel,
-                       [introduction, grid, line_chart, pie_chart],
+                       [introduction, grid, legend, line_chart, pie_chart],
                        "Evacuation model",
                        model_params)
 server.port = 8521
