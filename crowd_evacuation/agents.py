@@ -127,6 +127,7 @@ class CivilianAgent(Agent):
             if isinstance(neighbouring_object, CivilianAgent) and neighbouring_object.unique_id not in self.__interacted_with:
               self.__interact(neighbouring_object)
               self.__interacted_with.append(neighbouring_object.unique_id)
+              self.__determine_closest_exit()
               return
 
         # Else if there is no immediate danger for the agent, move the agent towards the closest exit. Remove
@@ -180,9 +181,11 @@ class CivilianAgent(Agent):
     # __interact: Interacts with neighboring agents to exchange information.
     def __interact(self, other):
       if isinstance(other, CivilianAgent):
+        print(self.__known_exits)
         shared_known_exits = list(set(self.__known_exits + other.__known_exits))
         self.__known_exits = shared_known_exits
         other.__known_exits = shared_known_exits
+        print(self.__known_exits)
 
     # __looking_around: an agents look around in some range and find out other agents.
     def __looking_around(self):

@@ -1,3 +1,4 @@
+import random
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import SingleGrid
@@ -46,7 +47,7 @@ class EvacuationModel(Model):
 
         # Create agents
         for i in range(self.num_agents):
-            a = CivilianAgent(i, self, known_exits)
+            a = CivilianAgent(i, self, random.sample(known_exits, 4))
             self.schedule.add(a)
             # Add the agent to a random grid cell
             not_empty = True
