@@ -101,13 +101,16 @@ class CivilianAgent(Agent):
         # self.print_attributes()
 
         # First, an agent should look around for the surrounding agents & possible moving positions
-        # to make optimal egress movement
-        surround_objects, possible_moving_range = self.__looking_around()
-        print("surrounding objects : ", surround_objects)
-        print("possible moving range : ", possible_moving_range)
+        surrounding_agents, possible_steps, contacting_objects = self.__looking_around()
 
-        if isinstance(surround_objects, FireAgent):
-            self.__fire_get_the_heck_outta_here(self, FireAgent.pos)
+        # Check this agent can survive or not..
+        if any(isinstance(x, FireAgent) for x in contacting_objects) and self.__cannot_move(possible_steps):
+            self.model.remove_agent(self, Reasons.KILLED_BY_FIRE)
+            return
+
+        # If this agent can move, then if there is fire next to this agent, should run away
+        if isinstance(surrounding_agents, FireAgent):
+            self.__fire_get_the_heck_outta_here(self, FireAgent)
 
         if self.__closest_exit is None:
             self.__determine_closest_exit()
@@ -117,6 +120,7 @@ class CivilianAgent(Agent):
         # If the agent reaches the exit, remove the agent from the schedule and the grid.
         if self.__reached_exit():
             self.model.remove_agent(self, Reasons.SAVED)
+
 
     def __absolute_distance(self, x, y):
         return abs(x[0] - y[0]) + abs(x[1] - y[1])
@@ -155,10 +159,19 @@ class CivilianAgent(Agent):
     def __reached_exit(self):
         return self.pos == self.__closest_exit
 
+    # __cannot_move: Returns True if there is no possible step the agent can make, otherwise it
+    # returns False.
+    def __cannot_move(self, possible_steps):
+        for x in possible_steps:
+            if self.model.grid.is_cell_empty(x):
+                return False
+        return True
+
     # __looking_around: an agents look around in visible range(5X5) and find out other agents.
     def __looking_around(self):
         # the list of objects surrounding an agent, 5x5 range, exclude the center where the agent is standing
         surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=2)
+        contacting_objects = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
         possible_moving_range = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False, radius=1)
 
         # also checking where this poor agent can move to survive
@@ -167,7 +180,7 @@ class CivilianAgent(Agent):
             if self.model.grid.is_cell_empty(position):
                 possible_moving_position.append(position)
 
-        return surrounding_agents, possible_moving_position
+        return surrounding_agents, possible_moving_position, contacting_objects
 
     def __egress_movement(self, possible_moving_range):
         # an agent can move one grid at a tick / time step
