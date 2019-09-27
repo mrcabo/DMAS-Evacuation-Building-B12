@@ -104,23 +104,21 @@ class CivilianAgent(Agent):
         surrounding_agents, possible_steps, contacting_objects = self.__looking_around()
 
         # Check this agent can survive or not..
-        if any(isinstance(x, FireAgent) for x in contacting_objects) and self.__cannot_move(possible_steps):
-            self.model.remove_agent(self, Reasons.KILLED_BY_FIRE)
-            return
-
-        # If this agent can move, then if there is fire next to this agent, should run away
-        if isinstance(surrounding_agents, FireAgent):
-            self.__fire_get_the_heck_outta_here(self, FireAgent)
-
-        if self.__closest_exit is None:
-            self.__determine_closest_exit()
-
-        self.__take_shortest_path()
+        if any(isinstance(x, FireAgent) for x in contacting_objects):
+            if self.__cannot_move(possible_steps):
+                self.model.remove_agent(self, Reasons.KILLED_BY_FIRE)
+                return
+            else:  # If this agent can move, then if there is fire next to this agent, should run away
+                closest_fire = self.__find_closest_agent(filter(lambda a: isinstance(a, FireAgent), contacting_objects))
+                self.__fire_get_the_heck_outta_here(closest_fire)
+        else:
+            if self.__closest_exit is None:
+                self.__determine_closest_exit()
+            self.__take_shortest_path()
 
         # If the agent reaches the exit, remove the agent from the schedule and the grid.
         if self.__reached_exit():
             self.model.remove_agent(self, Reasons.SAVED)
-
 
     def __absolute_distance(self, x, y):
         return abs(x[0] - y[0]) + abs(x[1] - y[1])
@@ -158,6 +156,20 @@ class CivilianAgent(Agent):
 
     def __reached_exit(self):
         return self.pos == self.__closest_exit
+
+    def __find_closest_agent(self, agents):
+        min_distance = 10000
+        closest_agent = None
+        for agent in agents:
+            distance_to_agent = self.__absolute_distance(self.pos, agent.pos)
+            if distance_to_agent < min_distance:
+                min_distance = distance_to_agent
+                closest_agent = agent
+        return closest_agent
+
+    def __find_exit(self, surrounding_agents):
+        surrounding_exits = filter(lambda a: isinstance(a, ExitAgent), surrounding_agents)
+        return self.__find_closest_agent(surrounding_exits)
 
     # __cannot_move: Returns True if there is no possible step the agent can make, otherwise it
     # returns False.
@@ -198,11 +210,11 @@ class CivilianAgent(Agent):
         # And move 1 cell towards that direction
         new_pos = norm_dir + (my_x, my_y)
         new_pos = np.round(new_pos).astype(int)
-        self.model.grid.move_agent(self, new_pos)
+        # self.model.grid.move_agent(self, new_pos)
         # TODO: It's not checking if the position is empty before moving agent,
         #  program crashes. Also, if agent is sourrounded by multiple FireAgents,
         #  this func will be called multiple times in a row. I think the whole array
         #  of neighbors should be passed as argument and here pick only ONE fire
         #  agent from where to escape.
-        #if self.model.grid.is_cell_empty(new_pos.tolist()):
-        #    self.model.grid.move_agent(self, new_pos.tolist())
+        if self.model.grid.is_cell_empty(new_pos.tolist()):
+           self.model.grid.move_agent(self, new_pos.tolist())
