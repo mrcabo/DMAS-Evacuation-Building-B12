@@ -81,6 +81,7 @@ class CivilianAgent(Agent):
         self.__gender = random.choice(["M", "F"])
         self.__size = random.uniform(40, 100)
         self.__closest_exit = None
+        self.__interacted_with = []
 
     def print_attributes(self):
         print('-' * 20)
@@ -93,12 +94,13 @@ class CivilianAgent(Agent):
         print("Age (years): ", self.__age)
         print("Gender: ", self.__gender)
         print("Size (kg): ", self.__size)
-        print("Closest_exit: ", self.__closest_exit)
+        print("Closest exit: ", self.__closest_exit)
+        print("Interacted with: ", self.__interacted_with)
         print()
         print()
 
     def step(self):
-        self.print_attributes()
+        #self.print_attributes()
 
         if self.__closest_exit is None:
             self.__determine_closest_exit()
@@ -118,7 +120,15 @@ class CivilianAgent(Agent):
             if isinstance(neighbouring_object, FireAgent):
                 self.__fire_get_the_heck_outta_here(neighbouring_object)
                 return
-        
+
+        # Else if there is any other civilian in the objects surrounding the agent and they did not interact yet,
+        # make them interact to exchange information.
+        for neighbouring_object in surround_objects:
+            if isinstance(neighbouring_object, CivilianAgent) and neighbouring_object.unique_id not in self.__interacted_with:
+              self.__interact(neighbouring_object)
+              self.__interacted_with.append(neighbouring_object.unique_id)
+              return
+
         # Else if there is no immediate danger for the agent, move the agent towards the closest exit. Remove
         # the agent from the schedule and the grid if the agent has exited the building.
         self.__take_shortest_path(possible_steps)
@@ -166,6 +176,13 @@ class CivilianAgent(Agent):
           if self.model.grid.is_cell_empty(x):
             return False
         return True
+
+    # __interact: Interacts with neighboring agents to exchange information.
+    def __interact(self, other):
+      if isinstance(other, CivilianAgent):
+        shared_known_exits = list(set(self.__known_exits + other.__known_exits))
+        self.__known_exits = shared_known_exits
+        other.__known_exits = shared_known_exits
 
     # __looking_around: an agents look around in some range and find out other agents.
     def __looking_around(self):
