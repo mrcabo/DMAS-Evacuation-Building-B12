@@ -117,25 +117,23 @@ class CivilianAgent(Agent):
           self._fire_get_the_heck_outta_here(closest_fire)
           return
         
-        # Else if there is any other civilian in the objects surrounding the agent and they did not interact yet,
-        # make them interact to exchange information.
+        # Else if there is any other civilian in the objects surrounding the agent, find the closest civilian
+        # that did not interact with the agent yet and make them interact to exchange information.
         if any(isinstance(x, CivilianAgent) for x in surrounding_agents):
-          for neighbouring_object in surround_objects:
-            if isinstance(neighbouring_object, CivilianAgent) and neighbouring_object.unique_id not in self._interacted_with:
-              self._interact(neighbouring_object)
-              self._interacted_with.append(neighbouring_object.unique_id)
-              self._determine_closest_exit()
-              return
+          closest_new_civilian = self._find_closest_new_civilian(surrounding_agents)
+          if closest_new_civilian is not None:
+            self._interact(closest_new_civilian)
+            self._interacted_with.append(closest_new_civilian.unique_id)
+            self._determine_closest_exit()
+            return
 
         # Else if there is no immediate danger for the agent, move the agent towards the closest exit. Remove
         # the agent from the schedule and the grid if the agent has exited the building.
-        else:
-            if self._closest_exit is None:
-                self._determine_closest_exit()
- 
-            self._take_shortest_path(possible_steps)
-            if self._reached_exit():
-                self.model.remove_agent(self, Reasons.SAVED)
+        if self._closest_exit is None:
+            self._determine_closest_exit()
+        self._take_shortest_path(possible_steps)
+        if self._reached_exit():
+            self.model.remove_agent(self, Reasons.SAVED)
   
     def _absolute_distance(self, x, y):
         return abs(x[0] - y[0]) + abs(x[1] - y[1])
@@ -184,6 +182,15 @@ class CivilianAgent(Agent):
     def _find_exit(self, surrounding_agents):
         surrounding_exits = filter(lambda a: isinstance(a, ExitAgent), surrounding_agents)
         return self._find_closest_agent(surrounding_exits)
+
+    def _find_closest_new_civilian(self, surrounding_agents):
+      civilians = [x for x in surrounding_agents if isinstance(x, CivilianAgent)]
+      while civilians:
+        closest_civilian = self._find_closest_agent(civilians)
+        if closest_civilian.unique_id not in self._interacted_with:
+          return closest_civilian
+        del civilians[civilians.index(closest_civilian)]
+      return None
 
     # _cannot_move: Returns True if there is no possible step the agent can make, otherwise it
     # returns False.
