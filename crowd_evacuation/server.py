@@ -27,12 +27,12 @@ def agent_portrayal(agent):
 
     if type(agent) is CivilianAgent:
         portrayal["Shape"] = "circle"
-        if agent.gender == 'M':
+        if agent._gender == 'M':
             portrayal["Color"] = "blue"
         else:
             portrayal["Color"] = "purple"
         portrayal["Filled"] = "true"
-        portrayal["r"] = agent.size/100
+        portrayal["r"] = agent._size/100
         portrayal["Layer"] = 1
 
     elif type(agent) is WallAgent:
