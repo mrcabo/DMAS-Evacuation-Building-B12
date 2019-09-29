@@ -78,8 +78,8 @@ class CivilianAgent(Agent):
         self.__willingness_to_follow_steward = random.uniform(0, 1)
         self.__speed = random.uniform(3, 10)
         self.__age = random.randrange(15, 65)
-        self.__gender = random.choice(["M", "F"])
-        self.__size = random.uniform(40, 100)
+        self.gender = random.choice(["M", "F"])
+        self.size = random.uniform(40, 100)
         self.__closest_exit = None
 
     def print_attributes(self):
@@ -91,8 +91,8 @@ class CivilianAgent(Agent):
         print("Willingness to follow steward: ", self.__willingness_to_follow_steward)
         print("Speed (m/s): ", self.__speed)
         print("Age (years): ", self.__age)
-        print("Gender: ", self.__gender)
-        print("Size (kg): ", self.__size)
+        print("Gender: ", self.gender)
+        print("Size (kg): ", self.size)
         print("Closest_exit: ", self.__closest_exit)
         print()
         print()

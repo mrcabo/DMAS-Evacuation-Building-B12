@@ -96,6 +96,8 @@ class EvacuationModel(Model):
         self.schedule.remove(agent)
         self.grid.remove_agent(agent)
 
+    # create environment
+
     def draw_environment(self):
         for i in range(2, 20):  # draw lower wall
             self.draw_wall(i, 1, i)
