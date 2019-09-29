@@ -102,28 +102,25 @@ class CivilianAgent(Agent):
     def step(self):
         #self.print_attributes()
 
-        if self._closest_exit is None:
-            self._determine_closest_exit()
-
-        surround_objects = self._looking_around()
-        possible_steps = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False)
-        contacting_objects = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
+        # First, an agent should look around for the surrounding agents & possible moving positions.
+        surrounding_agents, possible_steps, contacting_objects = self._looking_around()
 
         # If there is a fire directly next to the agent and the agent cannot move, remove the agent
         # from the schedule and the grid.
         if any(isinstance(x, FireAgent) for x in contacting_objects) and self._cannot_move(possible_steps):
             self.model.remove_agent(self, Reasons.KILLED_BY_FIRE)
             return
-
+          
         # Else if there is any fire in the objects surrounding the agent, move the agent away from the fire.
-        for neighbouring_object in surround_objects:
-            if isinstance(neighbouring_object, FireAgent):
-                self._fire_get_the_heck_outta_here(neighbouring_object)
-                return
-
+        if any(isinstance(x, FireAgent) for x in surrounding_agents):
+          closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
+          self._fire_get_the_heck_outta_here(closest_fire)
+          return
+        
         # Else if there is any other civilian in the objects surrounding the agent and they did not interact yet,
         # make them interact to exchange information.
-        for neighbouring_object in surround_objects:
+        if any(isinstance(x, CivilianAgent) for x in surrounding_agents):
+          for neighbouring_object in surround_objects:
             if isinstance(neighbouring_object, CivilianAgent) and neighbouring_object.unique_id not in self._interacted_with:
               self._interact(neighbouring_object)
               self._interacted_with.append(neighbouring_object.unique_id)
@@ -132,9 +129,13 @@ class CivilianAgent(Agent):
 
         # Else if there is no immediate danger for the agent, move the agent towards the closest exit. Remove
         # the agent from the schedule and the grid if the agent has exited the building.
-        self._take_shortest_path(possible_steps)
-        if self._reached_exit():
-            self.model.remove_agent(self, Reasons.SAVED)
+        else:
+            if self._closest_exit is None:
+                self._determine_closest_exit()
+ 
+            self._take_shortest_path(possible_steps)
+            if self._reached_exit():
+                self.model.remove_agent(self, Reasons.SAVED)
   
     def _absolute_distance(self, x, y):
         return abs(x[0] - y[0]) + abs(x[1] - y[1])
@@ -170,6 +171,20 @@ class CivilianAgent(Agent):
     def _reached_exit(self):
         return self.pos == self._closest_exit
 
+    def _find_closest_agent(self, agents):
+        min_distance = 10000
+        closest_agent = None
+        for agent in agents:
+            distance_to_agent = self._absolute_distance(self.pos, agent.pos)
+            if distance_to_agent < min_distance:
+                min_distance = distance_to_agent
+                closest_agent = agent
+        return closest_agent
+
+    def _find_exit(self, surrounding_agents):
+        surrounding_exits = filter(lambda a: isinstance(a, ExitAgent), surrounding_agents)
+        return self._find_closest_agent(surrounding_exits)
+
     # _cannot_move: Returns True if there is no possible step the agent can make, otherwise it
     # returns False.
     def _cannot_move(self, possible_steps):
@@ -184,29 +199,43 @@ class CivilianAgent(Agent):
         shared_known_exits = list(set(self._known_exits + other._known_exits))
         self._known_exits = shared_known_exits
         other._known_exits = shared_known_exits
-
-    # _looking_around: an agents look around in some range and find out other agents.
+ 
+    # _looking_around: an agents look around in visible range(5X5) and find out other agents.
     def _looking_around(self):
-        # the list of objects surrounding an agent
-        surroundings = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False,
-                                                     radius=2)  # 5x5 range, exclude the center where the agent is standing
-        return surroundings
+        # the list of objects surrounding an agent, 5x5 range, exclude the center where the agent is standing
+        surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=2)
+        contacting_objects = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
+        possible_moving_range = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False, radius=1)
+
+        # also checking where this poor agent can move to survive
+        possible_moving_position = []
+        for position in possible_moving_range:
+            if self.model.grid.is_cell_empty(position):
+                possible_moving_position.append(position)
+
+        return surrounding_agents, possible_moving_position, contacting_objects
+
+    def _egress_movement(self, possible_moving_range):
+        # an agent can move one grid at a tick / time step
+        # -> it means 3 x 3 range should be checked to find empty place to move
+
+        return
 
     def _fire_get_the_heck_outta_here(self, fire):
         # move towards the opposite direction of the fire
         my_x, my_y = self.pos
         opposite_direction = np.asarray([(my_x - fire.pos[0]), (my_y - fire.pos[1])])  # direction of escape
-        # We normalize the opposite_direction vector
+        # We normalize and find the unit vector of opposite_direction
         norm_dir = np.linalg.norm(opposite_direction)
         norm_dir = np.divide(opposite_direction, norm_dir)
         # And move 1 cell towards that direction
         new_pos = norm_dir + (my_x, my_y)
         new_pos = np.round(new_pos).astype(int)
-
+        # self.model.grid.move_agent(self, new_pos)
         # TODO: It's not checking if the position is empty before moving agent,
         #  program crashes. Also, if agent is sourrounded by multiple FireAgents,
         #  this func will be called multiple times in a row. I think the whole array
         #  of neighbors should be passed as argument and here pick only ONE fire
         #  agent from where to escape.
         if self.model.grid.is_cell_empty(new_pos.tolist()):
-            self.model.grid.move_agent(self, new_pos.tolist())
+           self.model.grid.move_agent(self, new_pos.tolist())

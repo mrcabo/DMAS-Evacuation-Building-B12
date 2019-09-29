@@ -5,7 +5,8 @@ from mesa.space import SingleGrid
 from mesa.datacollection import DataCollector
 
 from crowd_evacuation.agents import CivilianAgent, FireAgent, StewardAgent, WallAgent, ExitAgent, Reasons
-
+import random
+from random import randint
 
 class EvacuationModel(Model):
     """A model of the evacuation of a building
@@ -14,6 +15,7 @@ class EvacuationModel(Model):
     def __init__(self, N=10, width=50, height=50):
         self.num_agents = N
         self.pos_exits = []  # Position of every exit of the building
+        #self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
         self.fire_spread_pos = []
         self.agents_alive = N  # Agents alive and inside the building
         # TODO: maybe have an agents_saved array so we know through which exits these agents were saved?
@@ -30,24 +32,32 @@ class EvacuationModel(Model):
         self.draw_environment()
 
         # Create fire DEBUG
-        fire_initial_pos = [(2, 2)]
+        fire_initial_pos = [(11, 16)]
         for pos in fire_initial_pos:
             fire_agent = FireAgent(pos, self)
             self.schedule.add(fire_agent)
             self.grid.place_agent(fire_agent, pos)
 
-        known_exits = []
+        # Create exits
+        exits = []
+        #num_exits = 4
         for i in range(20, 25):  # draw emergency exits
-            known_exits.append((i, 2))
-            known_exits.append((i, self.grid.width - 3))
+            exits.append((i, 2))
+        for i in range(20, 25):  # draw emergency exits
+            exits.append((i, self.grid.height - 3))
         for i in range(10, 15):  # draw emergency exits
-            known_exits.append((2, i))
+            exits.append((2, i))
         for i in range(30, 35):  # draw emergency exits
-            known_exits.append((self.grid.width - 3, i))
+            exits.append((self.grid.width - 3, i))
 
         # Create agents
+        middle_of_known_exits = exits[2::5]
         for i in range(self.num_agents):
-            a = CivilianAgent(i, self, random.sample(known_exits, 4))
+
+            # an agent will know at least one exit from the pos_exits
+            known_exits = random.sample(middle_of_known_exits, randint(1, len(middle_of_known_exits)))
+            a = CivilianAgent(i, self, known_exits)
+
             self.schedule.add(a)
             # Add the agent to a random grid cell
             not_empty = True
