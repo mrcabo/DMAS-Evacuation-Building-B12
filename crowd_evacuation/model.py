@@ -4,9 +4,11 @@ from mesa.time import RandomActivation
 from mesa.space import SingleGrid
 from mesa.datacollection import DataCollector
 
-from crowd_evacuation.agents import CivilianAgent, FireAgent, StewardAgent, WallAgent, ExitAgent, Reasons
+from crowd_evacuation.agents import FireAgent, StewardAgent, WallAgent, ExitAgent, Reasons
+from crowd_evacuation.civilian_agent import CivilianAgent
 import random
 from random import randint
+
 
 class EvacuationModel(Model):
     """A model of the evacuation of a building
