@@ -65,3 +65,16 @@ Model
 - Initialize report with bullet points (EVERYONE)
 
 - Use map of actual building somehow (difficult)
+
+### wo 2nd oct ###
+
+- find a way to integrate some properties - maybe read the paper - e.g you can move 1-3 spaces with a probabilities that depends on your speed. (LUCIA)
+- make an E shape for the building (DIEGO)
+- move functionality of kill from civilian to fire agent and kill the civilian when the fire tries to move in a civilian position and move the fire there (ANDREAS)
+- improve steward class (stationary, moves when there is fire, include interact function that communicates the exits, they should know all the exits) (LUCIA)
+- change name of fire get outa here (SOYHUNG)
+- google how they can follow the shortest path to an exit (DIEGO - ALL SEARCH ABOUT THE PATH)
+- looking around function (add priorities) (SOHYUNG) - TOGETHER WITH STEP FUNCTION
+- interact function in the civilian improve (ANDREAS - SOHYUNG)
+
+- move human functionality that is shared out of the classes and make parental class (AFTER THE STEWARD)
