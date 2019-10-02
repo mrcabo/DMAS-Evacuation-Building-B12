@@ -74,13 +74,24 @@ class EvacuationModel(Model):
     def step(self):
         self.schedule.step()
 
+        # Create new fire agents where it is needed and kill any people that are occupying the positions where the fire
+        # will be placed.
         for pos in self.fire_spread_pos:
-            if self.grid.is_cell_empty(pos):  # TODO: For now, later it doesn't
-                # matter if its empty, it could be a person so we would have to kill them.. :(
+            # If there is a person in the new position, kill the person and place the fire.
+            if not self.grid.is_cell_empty(pos):
+              agent = self.grid.get_neighbors(pos, moore=False, include_center=True, radius=0)
+              if isinstance(agent[0], CivilianAgent) or isinstance(agent[0], StewardAgent):
                 new_fire = FireAgent(pos, self)
+                new_fire.kill(agent[0])
                 self.schedule.add(new_fire)
                 self.grid.place_agent(new_fire, pos)
+            # Else if the new position is empty, place the fire.
+            else:
+              new_fire = FireAgent(pos, self)
+              self.schedule.add(new_fire)
+              self.grid.place_agent(new_fire, pos)
         self.fire_spread_pos = []
+        
         # collect data
         self.datacollector.collect(self)
 

@@ -58,11 +58,14 @@ class FireAgent(Agent):
             )
             for grid_space in fire_neighbors:
                 # We store all the spaces within 1-block distance from the fire.
-                # The fire will spread (create new agents) in the model class
+                # The fire will spread (create new agents) in the model class.
                 self.model.fire_spread_pos.append(grid_space)
             self.condition = "Burned Out"
         elif self.condition == "On Fire":
             self.delay_counter += 1
+
+    def kill(self, agent):
+        self.model.remove_agent(agent, Reasons.KILLED_BY_FIRE)
 
     def get_pos(self):
         return self.pos
@@ -104,17 +107,11 @@ class CivilianAgent(Agent):
 
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
-
-        # If there is a fire directly next to the agent and the agent cannot move, remove the agent
-        # from the schedule and the grid.
-        if any(isinstance(x, FireAgent) for x in contacting_objects) and self._cannot_move(possible_steps):
-            self.model.remove_agent(self, Reasons.KILLED_BY_FIRE)
-            return
           
-        # Else if there is any fire in the objects surrounding the agent, move the agent away from the fire.
+        # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
         if any(isinstance(x, FireAgent) for x in surrounding_agents):
           closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
-          self._fire_get_the_heck_outta_here(closest_fire)
+          self._move_away_from_fire(closest_fire)
           return
         
         # Else if there is any other civilian in the objects surrounding the agent, find the closest civilian
@@ -228,7 +225,7 @@ class CivilianAgent(Agent):
 
         return
 
-    def _fire_get_the_heck_outta_here(self, fire):
+    def _move_away_from_fire(self, fire):
         # move towards the opposite direction of the fire
         my_x, my_y = self.pos
         opposite_direction = np.asarray([(my_x - fire.pos[0]), (my_y - fire.pos[1])])  # direction of escape

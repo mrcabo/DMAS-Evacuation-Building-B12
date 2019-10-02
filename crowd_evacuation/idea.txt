@@ -72,7 +72,7 @@ Model
 - make an E shape for the building (DIEGO)
 - move functionality of kill from civilian to fire agent and kill the civilian when the fire tries to move in a civilian position and move the fire there (ANDREAS)
 - improve steward class (stationary, moves when there is fire, include interact function that communicates the exits, they should know all the exits) (LUCIA)
-- change name of fire get outa here (SOYHUNG)
+- change name of fire get outa here (ANDREAS)
 - google how they can follow the shortest path to an exit (DIEGO - ALL SEARCH ABOUT THE PATH)
 - looking around function (add priorities) (SOHYUNG) - TOGETHER WITH STEP FUNCTION
 - interact function in the civilian improve (ANDREAS - SOHYUNG)
