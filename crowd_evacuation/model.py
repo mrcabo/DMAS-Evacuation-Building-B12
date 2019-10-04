@@ -1,4 +1,7 @@
 import random
+
+import numpy as np
+
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import SingleGrid
@@ -17,7 +20,7 @@ class EvacuationModel(Model):
     def __init__(self, N=10, width=50, height=50):
         self.num_agents = N
         self.pos_exits = []  # Position of every exit of the building
-        #self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
+        # self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
         self.fire_spread_pos = []
         self.agents_alive = N  # Agents alive and inside the building
         # TODO: maybe have an agents_saved array so we know through which exits these agents were saved?
@@ -31,7 +34,16 @@ class EvacuationModel(Model):
                              "Agents saved": "agents_saved"}
         )
 
-        self.draw_environment()
+        # TODO: exits should be defined only once here, and passed to draw environment to place "agents
+        # Create exits
+
+        exits_BB = [(0, 5),
+                    (0, 25),
+                    (0, 45)]
+        for i in range(3):
+            exits_BB.append((self.grid.width - 1, 14 + i))
+
+        self.draw_environment(exits_BB)
 
         # Create fire DEBUG
         fire_initial_pos = [(11, 16)]
@@ -40,20 +52,8 @@ class EvacuationModel(Model):
             self.schedule.add(fire_agent)
             self.grid.place_agent(fire_agent, pos)
 
-        # Create exits
-        exits = []
-        #num_exits = 4
-        for i in range(20, 25):  # draw emergency exits
-            exits.append((i, 2))
-        for i in range(20, 25):  # draw emergency exits
-            exits.append((i, self.grid.height - 3))
-        for i in range(10, 15):  # draw emergency exits
-            exits.append((2, i))
-        for i in range(30, 35):  # draw emergency exits
-            exits.append((self.grid.width - 3, i))
-
         # Create agents
-        middle_of_known_exits = exits[2::5]
+        middle_of_known_exits = exits_BB[2::5]
         for i in range(self.num_agents):
 
             # an agent will know at least one exit from the pos_exits
@@ -120,60 +120,76 @@ class EvacuationModel(Model):
         self.schedule.remove(agent)
         self.grid.remove_agent(agent)
 
-    # create environment
+    def draw_environment(self, exits=None):
+        length_E = int(self.grid.height / 5)  # length of the vertical segments of the E
+        depth_E = int(self.grid.width / 2)  # length of the horizontal segments of the E
+        for i in range(3):
+            start = max(0, 2 * i * length_E)
+            self.draw_wall((0, start), (0, start + length_E - 1))
+        for i in range(2):
+            start = 2 * i * length_E + length_E
+            self.draw_wall((depth_E, start), (depth_E, start + length_E - 1))
+        # Horizontal lines of the E (BB)
+        aux_y_coord = [length_E, 2 * length_E, 3 * length_E - 1, 4 * length_E - 1]
+        for y in aux_y_coord:
+            self.draw_wall((0, y), (depth_E, y))
+        top_left_corner = (0, self.grid.height - 1)
+        top_right_corner = (self.grid.width - 1, self.grid.height - 1)
+        bottom_right_corner = (self.grid.width - 1, 0)
+        # Draw long contour lines E
+        self.draw_wall((0, 0), bottom_right_corner)
+        self.draw_wall(top_left_corner, top_right_corner)
+        self.draw_wall(bottom_right_corner, top_right_corner)
 
-    def draw_environment(self):
-        for i in range(2, 20):  # draw lower wall
-            self.draw_wall(i, 1, i)
+        # Draw exits
+        self.draw_exits(exits)
 
-        for i in range(20, 25):  # draw emergency exits
-            self.draw_exits(i, 1, i)
+    def draw_wall(self, start, end):
+        """
+        Draws a line that goes from start point to end point.
 
-        for i in range(25, self.grid.width - 2):  # draw lower wall
-            self.draw_wall(i, 1, i)
+        Args:
+            start (List): Coordinates of line's starting point
+            end (List): Coordinates of line's end point
 
-        for i in range(2, 20):  # draw upper wall
-            self.draw_wall(i, self.grid.height - 2, i)
+        Returns:
+            None
+        """
+        diff_x, diff_y = np.subtract(end, start)
+        wall_coordinates = np.asarray(start)
 
-        for i in range(20, 25):  # draw emergency exits
-            self.draw_exits(i, self.grid.height - 2, i)
+        if self.grid.is_cell_empty(wall_coordinates.tolist()):
+            w = WallAgent(wall_coordinates.tolist(), self)
+            self.grid.place_agent(w, wall_coordinates.tolist())
 
-        for i in range(25, self.grid.width - 2):  # draw upper wall
-            self.draw_wall(i, self.grid.height - 2, i)
+        while diff_x != 0 or diff_y != 0:
+            if abs(diff_x) == abs(diff_y):
+                # diagonal wall
+                wall_coordinates[0] += np.sign(diff_x)
+                wall_coordinates[1] += np.sign(diff_y)
+                diff_x -= 1
+                diff_y -= 1
+            elif abs(diff_x) < abs(diff_y):
+                # wall built in y dimension
+                wall_coordinates[1] += np.sign(diff_y)
+                diff_y -= 1
+            else:
+                # wall built in x dimension
+                wall_coordinates[0] += np.sign(diff_x)
+                diff_x -= 1
+            if self.grid.is_cell_empty(wall_coordinates.tolist()):
+                w = WallAgent(wall_coordinates.tolist(), self)
+                self.grid.place_agent(w, wall_coordinates.tolist())
 
-        for i in range(1, 10):  # draw left wall
-            self.draw_wall(1, i, i)
-
-        for i in range(10, 15):  # draw emergency exits
-            self.draw_exits(1, i, i)
-
-        for i in range(15, self.grid.height - 1):  # draw left wall
-            self.draw_wall(1, i, i)
-
-        for i in range(1, 30):  # draw right wall
-            self.draw_wall(self.grid.width - 2, i, i)
-
-        for i in range(30, 35):  # draw emergency exits
-            self.draw_exits(self.grid.width - 2, i, i)
-
-        for i in range(35, self.grid.height - 1):  # draw right wall
-            self.draw_wall(self.grid.width - 2, i, i)
-
-    def draw_wall(self, x, y, i):
-        w = WallAgent(i, self)
-        not_empty = True
-        while not_empty:
-            if self.grid.is_cell_empty((x, y)):
-                not_empty = False
-                self.grid.place_agent(w, (x, y))
-
-    def draw_exits(self, x, y, i):
-        e = ExitAgent(i, self)
-        not_empty = True
-        while not_empty:
-            if self.grid.is_cell_empty((x, y)):
-                not_empty = False
-                self.grid.place_agent(e, (x, y))
+    def draw_exits(self, exits_list):
+        for ext in exits_list:
+            e = ExitAgent(ext, self)
+            if not self.grid.is_cell_empty(ext):
+                # Only walls should exist in the grid at this time, so no need to remove it from scheduler
+                agent = self.grid.get_cell_list_contents(ext)
+                self.grid.remove_agent(agent[0])
+            # Place exit
+            self.grid.place_agent(e, ext)
 
     @staticmethod
     def count_agents(model):
