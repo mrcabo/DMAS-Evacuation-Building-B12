@@ -35,18 +35,14 @@ class EvacuationModel(Model):
 
         # TODO: exits should be defined only once here, and passed to draw environment to place "agents
         # Create exits
-        exits = []
-        # num_exits = 4
-        for i in range(20, 25):  # draw emergency exits
-            exits.append((i, 2))
-        for i in range(20, 25):  # draw emergency exits
-            exits.append((i, self.grid.height - 3))
-        for i in range(10, 15):  # draw emergency exits
-            exits.append((2, i))
-        for i in range(30, 35):  # draw emergency exits
-            exits.append((self.grid.width - 3, i))
 
-        self.draw_environment()
+        exits_BB = [(0, 5),
+                    (0, 25),
+                    (0, 45)]
+        for i in range(3):
+            exits_BB.append((self.grid.width - 1, 14 + i))
+
+        self.draw_environment(exits_BB)
 
         # Create fire DEBUG
         fire_initial_pos = [(11, 16)]
@@ -56,7 +52,7 @@ class EvacuationModel(Model):
             self.grid.place_agent(fire_agent, pos)
 
         # Create agents
-        middle_of_known_exits = exits[2::5]
+        middle_of_known_exits = exits_BB[2::5]
         for i in range(self.num_agents):
 
             # an agent will know at least one exit from the pos_exits
@@ -125,13 +121,16 @@ class EvacuationModel(Model):
         aux_y_coord = [length_E, 2 * length_E, 3 * length_E - 1, 4 * length_E - 1]
         for y in aux_y_coord:
             self.draw_wall((0, y), (depth_E, y))
-
         top_left_corner = (0, self.grid.height - 1)
         top_right_corner = (self.grid.width - 1, self.grid.height - 1)
         bottom_right_corner = (self.grid.width - 1, 0)
+        # Draw long contour lines E
         self.draw_wall((0, 0), bottom_right_corner)
         self.draw_wall(top_left_corner, top_right_corner)
         self.draw_wall(bottom_right_corner, top_right_corner)
+
+        # Draw exits
+        self.draw_exits(exits)
 
     def draw_wall(self, start, end):
         """
@@ -173,10 +172,10 @@ class EvacuationModel(Model):
     def draw_exits(self, exits_list):
         for ext in exits_list:
             e = ExitAgent(ext, self)
-            if self.grid.is_cell_empty(ext):
+            if not self.grid.is_cell_empty(ext):
                 # Only walls should exist in the grid at this time, so no need to remove it from scheduler
                 agent = self.grid.get_cell_list_contents(ext)
-                self.grid.remove_agent(agent)
+                self.grid.remove_agent(agent[0])
             # Place exit
             self.grid.place_agent(e, ext)
 
