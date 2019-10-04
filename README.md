@@ -8,6 +8,7 @@ Brief description <- **Insert here :)**
 cd <path_to_base_dir>
 python3 -m venv venv
 source venv/bin/activate
+cd crowd_evacuation
 pip install -r requirements.txt
 export PYTHONPATH="$PYTHONPATH:<path_to_base_dir>"
 python run.py
