@@ -15,10 +15,7 @@ def create_graph(model):
     height = model.grid.height
     width = model.grid.width
     # Creating a 2D grid-like graph, each node represents a position
-    # xv, yv = np.meshgrid(np.arange(0, width), np.arange(0, height))
-    cell_list = list(itertools.product(np.arange(0, width, 1), np.arange(0, height, 1)))
     graph = nx.grid_graph(dim=[height, width])
-
     # Adding diagonal connectivity
     for row in range(0, height - 1):
         for col in range(0, width):
@@ -31,26 +28,33 @@ def create_graph(model):
                 graph.add_edge((row, col), (row + 1, col + 1))
 
     # Now we remove the nodes that are not walkable (walls)
+    cell_list = list(itertools.product(np.arange(0, width, 1), np.arange(0, height, 1)))
     for agent in model.grid.iter_cell_list_contents(cell_list):
         if isinstance(agent, WallAgent):
             graph.remove_node(tuple(agent.pos))
-
-    # graph = nx.grid_graph(dim=[5, 5])  # 5x5 grid
-    # nx.draw(graph)
-    # plt.show()
 
     return graph
 
 
 def update_graph(model):
+    """
+    Remove nodes from the graph that are FireAgents
+
+    Args:
+        model (EvacuationModel): Model of the simulation
+
+    Returns:
+        (nx.Graph): The new graph without fire nodes
+    """
     height = model.grid.height
     width = model.grid.width
     graph = model.graph
-    # # Now we remove the nodes that are not walkable (walls)
-    # cell_list = list(itertools.product(np.arange(0, width, 1), np.arange(0, height, 1)))
-    # for agent in model.grid.iter_cell_list_contents(cell_list):
-    #     if isinstance(agent, FireAgent):
-    #         graph.remove_node(tuple(agent.pos))
+    # Now we remove the nodes that are not walkable (fire)
+    cell_list = list(itertools.product(np.arange(0, width, 1), np.arange(0, height, 1)))
+    for agent in model.grid.iter_cell_list_contents(cell_list):
+        if isinstance(agent, FireAgent):
+            if graph.has_node(agent.pos):
+                graph.remove_node(tuple(agent.pos))
 
     return graph
 

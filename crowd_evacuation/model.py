@@ -60,7 +60,7 @@ class EvacuationModel(Model):
 
             # an agent will know at least one exit from the pos_exits
             # known_exits = random.sample(middle_of_known_exits, randint(1, len(middle_of_known_exits)))
-            known_exits = exits_BB[1:2]
+            known_exits = exits_BB[-3:]
             a = CivilianAgent(i, self, known_exits)
 
             self.schedule.add(a)
