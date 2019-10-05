@@ -70,6 +70,9 @@ class CivilianAgent(Agent):
         if path is not None:
             if self.model.grid.is_cell_empty(path[1]):
                 self.model.grid.move_agent(self, path[1])
+        # TODO: When agents are in a cell in the diagonal of exit, the path tells them to move diagonally,
+        #  but they can't bc of exitAgent, however, they don't get remove from model. solution, move this function to
+        #  ExitAgent step(), so it can remove e.g. only 1 agent at a time, but from one of the cells in contact with it
         if self._reached_exit():
             self.model.remove_agent(self, Reasons.SAVED)
 
