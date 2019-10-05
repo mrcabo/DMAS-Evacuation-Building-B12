@@ -3,7 +3,8 @@ from .model import EvacuationModel
 from mesa.visualization.modules import CanvasGrid,TextElement, ChartModule, PieChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
-from crowd_evacuation.agents import CivilianAgent, FireAgent, WallAgent, ExitAgent
+from crowd_evacuation.agents import FireAgent, WallAgent, ExitAgent
+from crowd_evacuation.civilian_agent import CivilianAgent
 from crowd_evacuation.ModelLegend import ModelLegend
 from crowd_evacuation.IntroductionText import IntroductionText
 
