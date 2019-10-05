@@ -45,7 +45,7 @@ class FireAgent(Agent):
         super().__init__(pos, model)
         self.pos = pos
         self.condition = "On Fire"
-        self.burned_delay = 5  # How many iter. steps will a fire agent wait until infecting neighboring squares
+        self.burned_delay = 3  # How many iter. steps will a fire agent wait until infecting neighboring squares
         self.delay_counter = 0
 
     def step(self):
@@ -61,11 +61,12 @@ class FireAgent(Agent):
                 # The fire will spread (create new agents) in the model class
                 self.model.fire_spread_pos.append(grid_space)
             self.condition = "Burned Out"
+            self.model.schedule.remove(self)  # Once it's burned, we don't need it in the scheduler
         elif self.condition == "On Fire":
             self.delay_counter += 1
 
-    def kill(self, agent):
-        self.model.remove_agent(agent, Reasons.KILLED_BY_FIRE)
+    # def kill(self, agent):
+    #     self.model.remove_agent(agent, Reasons.KILLED_BY_FIRE)
 
     def get_pos(self):
         return self.pos

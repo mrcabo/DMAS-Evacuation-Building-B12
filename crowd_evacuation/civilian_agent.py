@@ -17,7 +17,7 @@ class CivilianAgent(Agent):
         self._age = random.randrange(15, 65)
         self._gender = random.choice(["M", "F"])
         self._size = random.uniform(40, 100)
-        self._closest_exit = None
+        self._closest_exit = None  # TODO: I think this one should be called target or goal
         self._interacted_with = []
 
     def print_attributes(self):
@@ -42,11 +42,14 @@ class CivilianAgent(Agent):
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
 
+        # TODO: If there is an exit in surrounding_agents, add it to list of known exits. probably he'll want to go to
+        #  that one
+        # TODO: This piece is making the path finding func to crash. Needs diagnosing
         # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
-        if any(isinstance(x, FireAgent) for x in surrounding_agents):
-            closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
-            self._move_away_from_fire(closest_fire)
-            return
+        # if any(isinstance(x, FireAgent) for x in surrounding_agents):
+        #     closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
+        #     self._move_away_from_fire(closest_fire)
+        #     return
 
         # Else if there is any other civilian in the objects surrounding the agent, find the closest civilian
         # that did not interact with the agent yet and make them interact to exchange information.

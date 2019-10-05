@@ -49,7 +49,7 @@ class EvacuationModel(Model):
         self.graph = path_finding.create_graph(self)
 
         # Create fire DEBUG
-        fire_initial_pos = [(11, 16)]
+        fire_initial_pos = [(40, 16)]
         for pos in fire_initial_pos:
             fire_agent = FireAgent(pos, self)
             self.schedule.add(fire_agent)
@@ -78,6 +78,7 @@ class EvacuationModel(Model):
         self.datacollector.collect(self)
 
     def step(self):
+        self.fire_spread_pos = []
         self.graph = path_finding.update_graph(self)
         self.schedule.step()
 
@@ -86,10 +87,10 @@ class EvacuationModel(Model):
         for pos in self.fire_spread_pos:
             # If there is a person in the new position, kill the person and place the fire.
             if not self.grid.is_cell_empty(pos):
-                agent = self.grid.get_neighbors(pos, moore=False, include_center=True, radius=0)
-                if isinstance(agent[0], CivilianAgent) or isinstance(agent[0], StewardAgent):
+                agent = self.grid.get_cell_list_contents(pos)[0]
+                if isinstance(agent, CivilianAgent) or isinstance(agent, StewardAgent):
                     new_fire = FireAgent(pos, self)
-                    new_fire.kill(agent[0])
+                    self.remove_agent(agent, Reasons.KILLED_BY_FIRE)
                     self.schedule.add(new_fire)
                     self.grid.place_agent(new_fire, pos)
             # Else if the new position is empty, place the fire.
@@ -97,7 +98,6 @@ class EvacuationModel(Model):
                 new_fire = FireAgent(pos, self)
                 self.schedule.add(new_fire)
                 self.grid.place_agent(new_fire, pos)
-        self.fire_spread_pos = []
 
         # collect data
         self.datacollector.collect(self)
