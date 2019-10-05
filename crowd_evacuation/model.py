@@ -65,16 +65,24 @@ class EvacuationModel(Model):
 
             self.schedule.add(a)
             # Add the agent to a random grid cell
-            not_empty = True
-            while not_empty:
-                x = self.random.randrange(2, self.grid.width - 3)
-                y = self.random.randrange(2, self.grid.height - 3)
-                if self.grid.is_cell_empty((x, y)):
-                    not_empty = False
-                    self.grid.place_agent(a, (x, y))
+
+            while True:
+                # pick the random coordinate
+                x = self.random.randrange(1, self.grid.width - 1)
+                y = self.random.randrange(1, self.grid.height - 1)
+                # check if the point is empty and inside of the building
+                if self.grid.is_cell_empty((x, y)) and not self.is_inside_square((x, y), (0, 29), (25, 39)) \
+                        and not self.is_inside_square((x, y), (0, 10), (25, 20)):
+                    break
+
+            self.grid.place_agent(a, (x, y))
 
         self.running = True  # Set this to false when we want to finish simulation (e.g. all agents are out of building)
         self.datacollector.collect(self)
+
+    @staticmethod
+    def is_inside_square(point, bottom_left, top_right):
+        return bottom_left[0] < point[0] < top_right[0] and bottom_left[1] < point[1] < top_right[1]
 
     def step(self):
         self.graph = path_finding.update_graph(self)
