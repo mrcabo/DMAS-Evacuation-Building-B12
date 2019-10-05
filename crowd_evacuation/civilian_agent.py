@@ -2,6 +2,7 @@ from mesa import Agent
 from crowd_evacuation.agents import Reasons, FireAgent
 import random
 import numpy as np
+from crowd_evacuation import path_finding
 
 
 class CivilianAgent(Agent):
@@ -61,7 +62,11 @@ class CivilianAgent(Agent):
         # the agent from the schedule and the grid if the agent has exited the building.
         if self._closest_exit is None:
             self._determine_closest_exit()
-        self._take_shortest_path(possible_steps)
+        path = path_finding.find_path(self.model.graph, self.pos, self._closest_exit)
+        # self._take_shortest_path(possible_steps)
+        if path is not None:
+            if self.model.grid.is_cell_empty(path[1]):
+                self.model.grid.move_agent(self, path[1])
         if self._reached_exit():
             self.model.remove_agent(self, Reasons.SAVED)
 

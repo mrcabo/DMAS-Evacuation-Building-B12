@@ -9,6 +9,7 @@ from mesa.datacollection import DataCollector
 
 from crowd_evacuation.agents import FireAgent, StewardAgent, WallAgent, ExitAgent, Reasons
 from crowd_evacuation.civilian_agent import CivilianAgent
+from crowd_evacuation import path_finding
 import random
 from random import randint
 
@@ -27,6 +28,7 @@ class EvacuationModel(Model):
         self.agents_saved = 0  # Agents that managed to get out
         self.agents_killed = 0  # Agents that perished during the evacuation
         self.grid = SingleGrid(height, width, False)
+        self.graph = None  # General graph representing walkable terrain
         self.schedule = RandomActivation(self)  # Every tick, agents move in a different random order
         self.datacollector = DataCollector(
             model_reporters={"Agents alive": "agents_alive",
@@ -44,6 +46,7 @@ class EvacuationModel(Model):
             exits_BB.append((self.grid.width - 1, 14 + i))
 
         self.draw_environment(exits_BB)
+        self.graph = path_finding.create_graph(self)
 
         # Create fire DEBUG
         fire_initial_pos = [(11, 16)]
@@ -53,11 +56,12 @@ class EvacuationModel(Model):
             self.grid.place_agent(fire_agent, pos)
 
         # Create agents
-        middle_of_known_exits = exits_BB[2::5]
+        # middle_of_known_exits = exits_BB[2::5]
         for i in range(self.num_agents):
 
             # an agent will know at least one exit from the pos_exits
-            known_exits = random.sample(middle_of_known_exits, randint(1, len(middle_of_known_exits)))
+            # known_exits = random.sample(middle_of_known_exits, randint(1, len(middle_of_known_exits)))
+            known_exits = exits_BB[1:2]
             a = CivilianAgent(i, self, known_exits)
 
             self.schedule.add(a)
@@ -74,6 +78,7 @@ class EvacuationModel(Model):
         self.datacollector.collect(self)
 
     def step(self):
+        self.graph = path_finding.update_graph(self)
         self.schedule.step()
 
         # Create new fire agents where it is needed and kill any people that are occupying the positions where the fire
@@ -81,19 +86,19 @@ class EvacuationModel(Model):
         for pos in self.fire_spread_pos:
             # If there is a person in the new position, kill the person and place the fire.
             if not self.grid.is_cell_empty(pos):
-              agent = self.grid.get_neighbors(pos, moore=False, include_center=True, radius=0)
-              if isinstance(agent[0], CivilianAgent) or isinstance(agent[0], StewardAgent):
-                new_fire = FireAgent(pos, self)
-                new_fire.kill(agent[0])
-                self.schedule.add(new_fire)
-                self.grid.place_agent(new_fire, pos)
+                agent = self.grid.get_neighbors(pos, moore=False, include_center=True, radius=0)
+                if isinstance(agent[0], CivilianAgent) or isinstance(agent[0], StewardAgent):
+                    new_fire = FireAgent(pos, self)
+                    new_fire.kill(agent[0])
+                    self.schedule.add(new_fire)
+                    self.grid.place_agent(new_fire, pos)
             # Else if the new position is empty, place the fire.
             else:
-              new_fire = FireAgent(pos, self)
-              self.schedule.add(new_fire)
-              self.grid.place_agent(new_fire, pos)
+                new_fire = FireAgent(pos, self)
+                self.schedule.add(new_fire)
+                self.grid.place_agent(new_fire, pos)
         self.fire_spread_pos = []
-        
+
         # collect data
         self.datacollector.collect(self)
 
