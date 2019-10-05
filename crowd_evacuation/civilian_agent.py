@@ -40,6 +40,8 @@ class CivilianAgent(Agent):
 
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
+        # TODO : The civil agent should move/walk around first.
+        #  Otherwise they don't move till the fire is getting close to them.
 
         # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
         if any(isinstance(x, FireAgent) for x in surrounding_agents):
@@ -149,7 +151,7 @@ class CivilianAgent(Agent):
     # _looking_around: an agents look around in visible range(5X5) and find out other agents.
     def _looking_around(self):
         # the list of objects surrounding an agent, 5x5 range, exclude the center where the agent is standing
-        surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=2)
+        surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=5)
         contacting_objects = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
         possible_moving_range = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False, radius=1)
 
