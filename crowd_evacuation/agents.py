@@ -58,7 +58,7 @@ class FireAgent(Agent):
             )
             for grid_space in fire_neighbors:
                 # We store all the spaces within 1-block distance from the fire.
-                # The fire will spread (create new agents) in the model class.
+                # The fire will spread (create new agents) in the model class
                 self.model.fire_spread_pos.append(grid_space)
             self.condition = "Burned Out"
         elif self.condition == "On Fire":
