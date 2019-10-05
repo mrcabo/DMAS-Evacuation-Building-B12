@@ -1,3 +1,4 @@
+import random
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import SingleGrid
@@ -52,9 +53,11 @@ class EvacuationModel(Model):
         # Create agents
         middle_of_known_exits = exits[2::5]
         for i in range(self.num_agents):
+
             # an agent will know at least one exit from the pos_exits
             known_exits = random.sample(middle_of_known_exits, randint(1, len(middle_of_known_exits)))
             a = CivilianAgent(i, self, known_exits)
+
             self.schedule.add(a)
             # Add the agent to a random grid cell
             not_empty = True
@@ -103,6 +106,8 @@ class EvacuationModel(Model):
         self.agents_alive -= 1
         self.schedule.remove(agent)
         self.grid.remove_agent(agent)
+
+    # create environment
 
     def draw_environment(self):
         for i in range(2, 20):  # draw lower wall
