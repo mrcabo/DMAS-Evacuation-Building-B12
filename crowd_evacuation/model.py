@@ -22,7 +22,6 @@ class EvacuationModel(Model):
         self.num_agents = N
         self.pos_exits = []  # Position of every exit of the building
         # self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
-        self.fire_spread_pos = []
         self.agents_alive = N  # Agents alive and inside the building
         # TODO: maybe have an agents_saved array so we know through which exits these agents were saved?
         self.agents_saved = 0  # Agents that managed to get out
@@ -78,27 +77,8 @@ class EvacuationModel(Model):
         self.datacollector.collect(self)
 
     def step(self):
-        self.fire_spread_pos = []
         self.graph = path_finding.update_graph(self)
         self.schedule.step()
-
-        # Create new fire agents where it is needed and kill any people that are occupying the positions where the fire
-        # will be placed.
-        for pos in self.fire_spread_pos:
-            # If there is a person in the new position, kill the person and place the fire.
-            if not self.grid.is_cell_empty(pos):
-                agent = self.grid.get_cell_list_contents(pos)[0]
-                if isinstance(agent, CivilianAgent) or isinstance(agent, StewardAgent):
-                    new_fire = FireAgent(pos, self)
-                    self.remove_agent(agent, Reasons.KILLED_BY_FIRE)
-                    self.schedule.add(new_fire)
-                    self.grid.place_agent(new_fire, pos)
-            # Else if the new position is empty, place the fire.
-            else:
-                new_fire = FireAgent(pos, self)
-                self.schedule.add(new_fire)
-                self.grid.place_agent(new_fire, pos)
-
         # collect data
         self.datacollector.collect(self)
 
@@ -195,6 +175,23 @@ class EvacuationModel(Model):
                 self.grid.remove_agent(agent[0])
             # Place exit
             self.grid.place_agent(e, ext)
+
+    def spread_fire(self, fire_agent):
+        fire_neighbors = self.grid.get_neighborhood(fire_agent.pos, moore=True, include_center=False)
+        for grid_space in fire_neighbors:
+            if self.grid.is_cell_empty(grid_space):
+                # Create new fire agent and add it to grid and scheduler
+                new_fire_agent = FireAgent(grid_space, self)
+                self.schedule.add(new_fire_agent)
+                self.grid.place_agent(new_fire_agent, grid_space)
+            else:
+                # If human agents, eliminate them and spread anyway
+                agent = self.grid.get_cell_list_contents(grid_space)[0]
+                if isinstance(agent, (CivilianAgent, StewardAgent)):
+                    new_fire_agent = FireAgent(grid_space, self)
+                    self.remove_agent(agent, Reasons.KILLED_BY_FIRE)
+                    self.schedule.add(new_fire_agent)
+                    self.grid.place_agent(new_fire_agent, grid_space)
 
     @staticmethod
     def count_agents(model):
