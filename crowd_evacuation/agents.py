@@ -50,12 +50,16 @@ class FireAgent(Agent):
 
     def step(self):
         """
-        Fire agents "On Fire" will spread after a certain delay.
+        Fire agents "On Fire" will spread after a certain delay with a certain probability.
+        This probability makes it seem more realistic (less square-like).
         """
         if (self.condition == "On Fire") and (self.delay_counter >= self.burned_delay):
-            self.model.spread_fire(self)
-            self.condition = "Burned Out"
-            self.model.schedule.remove(self)  # Once it's burned, we don't need it in the scheduler
+            # Once we've reached the minimum delay, fire will spread eventually, depending on some probability
+            p_spread = np.random.choice(4)  # Spread prob. 1/4
+            if p_spread < 1:
+                self.model.spread_fire(self)
+                self.condition = "Burned Out"
+                self.model.schedule.remove(self)  # Once it's burned, we don't need it in the scheduler
         elif self.condition == "On Fire":
             self.delay_counter += 1
 
