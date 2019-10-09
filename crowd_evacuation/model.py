@@ -23,8 +23,7 @@ class EvacuationModel(Model):
         self.pos_exits = []  # Position of every exit of the building
         # self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
         self.agents_alive = N  # Agents alive and inside the building
-        # TODO: maybe have an agents_saved array so we know through which exits these agents were saved?
-        self.agents_saved = 0  # Agents that managed to get out
+        self.agents_saved = {}  # Agents that managed to get out
         self.agents_killed = 0  # Agents that perished during the evacuation
         self.grid = SingleGrid(height, width, False)
         self.graph = None  # General graph representing walkable terrain
@@ -32,7 +31,8 @@ class EvacuationModel(Model):
         self.datacollector = DataCollector(
             model_reporters={"Agents alive": "agents_alive",
                              "Agents killed": "agents_killed",
-                             "Agents saved": "agents_saved"}
+                             # TODO: for now we are reporting the sum of people that were saved (maybe we can report their exitpoints in the end?
+                             "Agents saved": lambda s: sum(self.agents_saved.values())}
         )
 
         # TODO: exits should be defined only once here, and passed to draw environment to place "agents
@@ -105,7 +105,17 @@ class EvacuationModel(Model):
             None
         """
         if reason == Reasons.SAVED:
-            self.agents_saved += 1
+            exitpoint = kwargs.get("exitpoint", None)
+            # TODO : When civilian agent has reached the exit must call remove agent with extra arg:
+            #  exitpoint= <str(tuple of exit)>. For now we just increment one default dictionary key.
+            if exitpoint is None:
+                exitpoint = "(0, 0)"
+                #raise ValueError("No exitpoint provided for the civilian")
+            if exitpoint in self.agents_saved:
+                self.agents_saved[exitpoint] += 1
+            else:
+                self.agents_saved[exitpoint] = 1
+
         elif reason == Reasons.KILLED_BY_FIRE:
             self.agents_killed += 1
 
