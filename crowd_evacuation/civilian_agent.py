@@ -12,12 +12,17 @@ class CivilianAgent(Agent):
         self._known_exits = known_exits
         self._strategy = "random"
         self._willingness_to_follow_steward = random.uniform(0, 1)
-        self._speed = random.uniform(3, 10)
         self._age = random.randrange(15, 65)
         self._gender = random.choice(["M", "F"])
         self._size = random.uniform(40, 100)
         self._closest_exit = None
         self._interacted_with = []
+        self._speed = self.calculate_speed(self._age, self._size)
+
+    def calculate_speed(self, age, size):
+        normal_speed = random.uniform(20, 30)
+        speed = normal_speed - (age*0.1 + size*0.1)
+        return round(speed, 1)
 
     def print_attributes(self):
         print('-' * 20)
@@ -36,7 +41,7 @@ class CivilianAgent(Agent):
         print()
 
     def step(self):
-        # self.print_attributes()
+        self.print_attributes()
 
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
@@ -80,6 +85,7 @@ class CivilianAgent(Agent):
         # Find the closest available position to the closest exit around the agent and move the agent there.
         while distances:
             new_position = possible_steps[distances.index(min(distances))]
+            print(new_position)
             if self.model.grid.is_cell_empty(new_position):
                 self.model.grid.move_agent(self, new_position)
                 break
