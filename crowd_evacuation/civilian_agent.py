@@ -116,7 +116,7 @@ class CivilianAgent(Agent):
         Returns:
             (bool): if the agent has been saved or not
         """
-        for exit_neighbour in self.model.grid.get_neighborhood(self._closest_exit, moore=False):
+        for exit_neighbour in self.model.grid.get_neighborhood(self._closest_exit, moore=True):
             if self.pos == exit_neighbour:
                 return True
         return False
