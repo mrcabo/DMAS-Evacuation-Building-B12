@@ -1,34 +1,5 @@
-from enum import Enum
-
 from mesa import Agent
-import random
 import numpy as np
-
-
-class Reasons(Enum):
-    SAVED = 1
-    KILLED_BY_FIRE = 2
-
-
-class StewardAgent(Agent):
-    def __init__(self, unique_id, model, known_exits):
-        super().__init__(unique_id, model)
-
-        self._known_exits = known_exits
-
-
-class WallAgent(Agent):
-    """ A wall agent."""
-
-    def __init__(self, unique_id, model):
-        super().__init__(unique_id, model)
-
-
-class ExitAgent(Agent):
-    """ An emergency exit agent."""
-
-    def __init__(self, unique_id, model):
-        super().__init__(unique_id, model)
 
 
 class FireAgent(Agent):
