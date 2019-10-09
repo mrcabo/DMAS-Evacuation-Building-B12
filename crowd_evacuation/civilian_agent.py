@@ -2,6 +2,7 @@ from mesa import Agent
 from crowd_evacuation.agents import Reasons, FireAgent
 import random
 import numpy as np
+from crowd_evacuation import path_finding
 
 
 class CivilianAgent(Agent):
@@ -15,7 +16,7 @@ class CivilianAgent(Agent):
         self._age = random.randrange(15, 65)
         self._gender = random.choice(["M", "F"])
         self._size = random.uniform(40, 100)
-        self._closest_exit = None
+        self._closest_exit = None  # TODO: I think this one should be called target or goal
         self._interacted_with = []
         self._speed = self.calculate_speed(self._age, self._size)
 
@@ -45,12 +46,17 @@ class CivilianAgent(Agent):
 
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
+        # TODO : The civil agent should move/walk around first.
+        #  Otherwise they don't move till the fire is getting close to them.
 
+        # TODO: If there is an exit in surrounding_agents, add it to list of known exits. probably he'll want to go to
+        #  that one
+        # TODO: This piece is making the path finding func to crash. Needs diagnosing
         # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
-        if any(isinstance(x, FireAgent) for x in surrounding_agents):
-            closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
-            self._move_away_from_fire(closest_fire)
-            return
+        # if any(isinstance(x, FireAgent) for x in surrounding_agents):
+        #     closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
+        #     self._move_away_from_fire(closest_fire)
+        #     return
 
         # Else if there is any other civilian in the objects surrounding the agent, find the closest civilian
         # that did not interact with the agent yet and make them interact to exchange information.
@@ -66,7 +72,14 @@ class CivilianAgent(Agent):
         # the agent from the schedule and the grid if the agent has exited the building.
         if self._closest_exit is None:
             self._determine_closest_exit()
-        self._take_shortest_path(possible_steps)
+        path = path_finding.find_path(self.model.graph, self.pos, self._closest_exit)
+        # self._take_shortest_path(possible_steps)
+        if path is not None:
+            if self.model.grid.is_cell_empty(path[1]):
+                self.model.grid.move_agent(self, path[1])
+        # TODO: When agents are in a cell in the diagonal of exit, the path tells them to move diagonally,
+        #  but they can't bc of exitAgent, however, they don't get remove from model. solution, move this function to
+        #  ExitAgent step(), so it can remove e.g. only 1 agent at a time, but from one of the cells in contact with it
         if self._reached_exit():
             self.model.remove_agent(self, Reasons.SAVED)
 
@@ -155,7 +168,7 @@ class CivilianAgent(Agent):
     # _looking_around: an agents look around in visible range(5X5) and find out other agents.
     def _looking_around(self):
         # the list of objects surrounding an agent, 5x5 range, exclude the center where the agent is standing
-        surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=2)
+        surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=5)
         contacting_objects = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
         possible_moving_range = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False, radius=1)
 
