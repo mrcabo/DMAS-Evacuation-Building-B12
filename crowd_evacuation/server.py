@@ -10,8 +10,8 @@ from crowd_evacuation.civilian_agent import CivilianAgent
 from crowd_evacuation.model_legend import ModelLegend
 from crowd_evacuation.introduction_text import IntroductionText
 
-COLORS_FIRE = {"On Fire": "#880000",
-               "Burned Out": "#000000"}
+COLORS_FIRE = {"On Fire": "#FF0000",
+               "Burned Out": "#800000"}
 
 
 def agent_portrayal(agent):
@@ -30,10 +30,12 @@ def agent_portrayal(agent):
 
     if type(agent) is CivilianAgent:
         portrayal["Shape"] = "circle"
-        if agent._gender == 'M':
-            portrayal["Color"] = "blue"
+        if agent._age <= 30:
+            portrayal["Color"] = "Cyan"
+        elif agent._age <= 50:
+            portrayal["Color"] = "CornflowerBlue"
         else:
-            portrayal["Color"] = "purple"
+            portrayal["Color"] = "DarkBlue"
         portrayal["Filled"] = "true"
         portrayal["r"] = agent._size/100
         portrayal["Layer"] = 1

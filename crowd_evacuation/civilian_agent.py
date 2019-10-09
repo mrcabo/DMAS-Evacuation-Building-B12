@@ -14,7 +14,7 @@ class CivilianAgent(Agent):
         self._strategy = "random"
         self._willingness_to_follow_steward = random.uniform(0, 1)
         self._age = random.randrange(15, 65)
-        self._gender = random.choice(["M", "F"])
+        # self._gender = random.choice(["M", "F"])  not used yet. Maybe for later. Gender can affect speed (see papers)
         self._size = random.uniform(40, 100)
         self._goal = None
         self._interacted_with = []
@@ -34,7 +34,7 @@ class CivilianAgent(Agent):
         print("Willingness to follow steward: ", self._willingness_to_follow_steward)
         print("Speed (m/s): ", self._speed)
         print("Age (years): ", self._age)
-        print("Gender: ", self._gender)
+       # print("Gender: ", self._gender)
         print("Size (kg): ", self._size)
         print("Closest exit: ", self._goal)
         print("Interacted with: ", self._interacted_with)
@@ -42,7 +42,7 @@ class CivilianAgent(Agent):
         print()
 
     def step(self):
-        self.print_attributes()
+       # self.print_attributes()
 
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
