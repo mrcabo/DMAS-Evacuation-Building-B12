@@ -90,15 +90,15 @@ class CivilianAgent(Agent):
         path = path_finding.find_path(self.model.graph, self.pos, self._goal)
         # self._take_shortest_path(possible_steps)
         if path is not None:
-            print(self._speed)
-            print(len(path))
+            # if the distance to the exit is shortest than the speed of the agent,
+            # move the agent in front of the exit
             if len(path) < self._speed:
-                print('here')
-                if self.model.grid.is_cell_empty(path[len(path)-1]):
-                    self.model.grid.move_agent(self, path[len(path)-1])
+                if self.model.grid.is_cell_empty(path[len(path)-2]):
+                    self.model.grid.move_agent(self, path[len(path)-2])
+            # otherwise, move the agent as many squares as indicated by the speed
             else:
-                if self.model.grid.is_cell_empty(path[self._speed-1]):
-                    self.model.grid.move_agent(self, path[self._speed-1])
+                if self.model.grid.is_cell_empty(path[self._speed-2]):
+                    self.model.grid.move_agent(self, path[self._speed-2])
         # TODO: When agents are in a cell in the diagonal of exit, the path tells them to move diagonally,
         #  but they can't bc of exitAgent, however, they don't get remove from model. solution, move this function to
         #  ExitAgent step(), so it can remove e.g. only 1 agent at a time, but from one of the cells in contact with it
