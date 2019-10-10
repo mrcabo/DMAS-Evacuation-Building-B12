@@ -78,3 +78,20 @@ Model
 - interact function in the civilian improve (ANDREAS - SOHYUNG)
 
 - move human functionality that is shared out of the classes and make parental class (AFTER THE STEWARD)
+
+
+### wo 9th oct ###
+
+- 'looking_around' strores 'observed surroundings' (SOHYUNG)
+- 'take_action' will call all the possible actions (based on priorities) (SOHYUNG)
+- Steward agent : place them & 'communicating' function (ANDREAS)
+- Civilian agent : If civil agent reaches to the exit, try to move to exit (LUCIA)
+- writing REPORT (LUCIA)
+- shades of colour : speed can be different based on age (LUCIA)
+- delete pie-chart (DIEGO)
+- in the model, keep tracking which exits that agents passed for egress(saving as dictionary) (ANDREAS)
+- graph each civilian(remove fires), based on 'looking around'
+  remove agents from graph (don't without storing it  /  input graph for A*)
+- 'moving' function : 'avoid fire' -> not going opposite side of fire
+                      when the known path is NONE -> random direction & move    (DIEGO / SOHYUNG)
+- willingness : 'commnted' -> TBD... (DIEGO)
