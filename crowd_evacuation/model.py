@@ -1,5 +1,3 @@
-import random
-
 import numpy as np
 
 from mesa import Model
@@ -7,11 +5,13 @@ from mesa.time import RandomActivation
 from mesa.space import SingleGrid
 from mesa.datacollection import DataCollector
 
-from crowd_evacuation.agents import FireAgent, StewardAgent, WallAgent, ExitAgent, Reasons
+from crowd_evacuation.exit_agent import ExitAgent
+from crowd_evacuation.wall_agent import WallAgent
+from crowd_evacuation.fire_agent import FireAgent
+from crowd_evacuation.steward_agent import StewardAgent
 from crowd_evacuation.civilian_agent import CivilianAgent
+from crowd_evacuation.reasons import Reasons
 from crowd_evacuation import path_finding
-import random
-from random import randint
 
 
 class EvacuationModel(Model):

@@ -1,5 +1,5 @@
 from mesa import Agent
-from crowd_evacuation.agents import Reasons, FireAgent
+from crowd_evacuation.reasons import Reasons
 import random
 import numpy as np
 from crowd_evacuation import path_finding
@@ -17,7 +17,7 @@ class CivilianAgent(Agent):
         self._age = random.randrange(15, 65)
         self._gender = random.choice(["M", "F"])
         self._size = random.uniform(40, 100)
-        self._closest_exit = None  # TODO: I think this one should be called target or goal - Yes
+        self._goal = None
         self._interacted_with = []
 
     def print_attributes(self):
@@ -31,7 +31,7 @@ class CivilianAgent(Agent):
         print("Age (years): ", self._age)
         print("Gender: ", self._gender)
         print("Size (kg): ", self._size)
-        print("Closest exit: ", self._closest_exit)
+        print("Closest exit: ", self._goal)
         print("Interacted with: ", self._interacted_with)
         print()
         print()
@@ -59,9 +59,9 @@ class CivilianAgent(Agent):
 
         # Else if there is no immediate danger for the agent, move the agent towards the closest exit. Remove
         # the agent from the schedule and the grid if the agent has exited the building.
-        if self._closest_exit is None:
+        if self._goal is None:
             self._determine_closest_exit()
-        path = path_finding.find_path(self.model.graph, self.pos, self._closest_exit)
+        path = path_finding.find_path(self.model.graph, self.pos, self._goal)
         # self._take_shortest_path(possible_steps)
         if path is not None:
             if self.model.grid.is_cell_empty(path[1]):
@@ -76,11 +76,11 @@ class CivilianAgent(Agent):
     # _determine_closest_exit: Determines the closest known exit, based on the absolute distance.
     def _determine_closest_exit(self):
         distances = [self._absolute_distance(self.pos, x) for x in self._known_exits]
-        self._closest_exit = self._known_exits[distances.index(min(distances))]
+        self._goal = self._known_exits[distances.index(min(distances))]
 
     # _take_shortest_path: Takes the shortest path to the closest exit.
     def _take_shortest_path(self, possible_steps):
-        distances = [self._absolute_distance(self._closest_exit, x) for x in possible_steps]
+        distances = [self._absolute_distance(self._goal, x) for x in possible_steps]
 
         # Find the closest available position to the closest exit around the agent and move the agent there.
         while distances:
@@ -108,7 +108,7 @@ class CivilianAgent(Agent):
         Returns:
             (bool): if the agent has been saved or not
         """
-        for exit_neighbour in self.model.grid.get_neighborhood(self._closest_exit, moore=True):
+        for exit_neighbour in self.model.grid.get_neighborhood(self._goal, moore=True):
             if self.pos == exit_neighbour:
                 return True
         return False

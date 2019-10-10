@@ -2,7 +2,8 @@ import numpy as np
 import itertools
 import networkx as nx
 
-from crowd_evacuation.agents import WallAgent, FireAgent
+from crowd_evacuation.wall_agent import WallAgent
+from crowd_evacuation.fire_agent import FireAgent
 
 
 def euc_dist(a, b):
