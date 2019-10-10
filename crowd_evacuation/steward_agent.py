@@ -5,7 +5,7 @@ from crowd_evacuation.reasons import Reasons
 
 class StewardAgent(CivilianAgent):
     def __init__(self, unique_id, model, known_exits):
-        super().__init__(unique_id, known_exits)
+        super().__init__(unique_id, model, known_exits)
 
     def step(self):
         # self.print_attributes()
@@ -23,7 +23,7 @@ class StewardAgent(CivilianAgent):
         # TODO: should we return or not? Should the steward keep moving? What if there are many people around it vs few?
         # The stewards should shout information to people around them. We can simulate this by making them interact
         # with every civilian in their surroundings.
-        if any(isinstance(x, CivilianAgent) for x in surrounding_agents):
+        if any(isinstance(x, CivilianAgent) and not isinstance(x, StewardAgent) for x in surrounding_agents):
             for x in surrounding_agents:
                 if isinstance(x, CivilianAgent):
                     self._interact(x)
