@@ -7,10 +7,11 @@ from crowd_evacuation import path_finding
 
 class CivilianAgent(Agent):
 
-    def __init__(self, unique_id, model, known_exits):
+    def __init__(self, unique_id, model, known_exits, model_graph):
         super().__init__(unique_id, model)
 
         self._known_exits = known_exits
+        self._knowledge_graph = model_graph.copy()
         self._strategy = "random"
         self._willingness_to_follow_steward = random.uniform(0, 1)
         self._speed = random.uniform(3, 10)
@@ -61,7 +62,14 @@ class CivilianAgent(Agent):
         # the agent from the schedule and the grid if the agent has exited the building.
         if self._goal is None:
             self._determine_closest_exit()
-        path = path_finding.find_path(self.model.graph, self.pos, self._goal)
+        temp_graph = self._knowledge_graph.copy()
+        # neighbours = self.model.grid.get_neighborhood(self.pos, moore=True, radius=2, include_center=False)
+        neigh = self.model.grid.get_neighbors(self.pos, moore=True, radius=2, include_center=False)
+        for neighbour in self.model.grid.iter_neighbors(self.pos, moore=True, radius=2, include_center=False):
+            if isinstance(neighbour, CivilianAgent):
+                temp_graph.remove_node(tuple(neighbour.pos))
+
+        path = path_finding.find_path(temp_graph, self.pos, self._goal)
         # self._take_shortest_path(possible_steps)
         if path is not None:
             if self.model.grid.is_cell_empty(path[1]):
