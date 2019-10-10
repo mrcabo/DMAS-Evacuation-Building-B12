@@ -24,6 +24,7 @@ class EvacuationModel(Model):
         # self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
         self.agents_alive = N  # Agents alive and inside the building
         # TODO: maybe have an agents_saved array so we know through which exits these agents were saved?
+        # TODO: dictionary with the pos: people saved through that exit
         self.agents_saved = 0  # Agents that managed to get out
         self.agents_killed = 0  # Agents that perished during the evacuation
         self.grid = SingleGrid(height, width, False)
@@ -35,7 +36,6 @@ class EvacuationModel(Model):
                              "Agents saved": "agents_saved"}
         )
 
-        # TODO: exits should be defined only once here, and passed to draw environment to place "agents
         # Create exits
 
         exits_BB = [(0, 5),

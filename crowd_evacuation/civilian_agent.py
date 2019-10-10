@@ -17,7 +17,7 @@ class CivilianAgent(Agent):
         self._age = random.randrange(15, 65)
         self._gender = random.choice(["M", "F"])
         self._size = random.uniform(40, 100)
-        self._closest_exit = None  # TODO: I think this one should be called target or goal
+        self._closest_exit = None  # TODO: I think this one should be called target or goal - Yes
         self._interacted_with = []
 
     def print_attributes(self):
@@ -41,12 +41,6 @@ class CivilianAgent(Agent):
 
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
-        # TODO : The civil agent should move/walk around first.
-        #  Otherwise they don't move till the fire is getting close to them.
-
-        # TODO: If there is an exit in surrounding_agents, add it to list of known exits. probably he'll want to go to
-        #  that one
-        # TODO: This piece is making the path finding func to crash. Needs diagnosing
         # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
         # if any(isinstance(x, FireAgent) for x in surrounding_agents):
         #     closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
@@ -72,9 +66,7 @@ class CivilianAgent(Agent):
         if path is not None:
             if self.model.grid.is_cell_empty(path[1]):
                 self.model.grid.move_agent(self, path[1])
-        # TODO: When agents are in a cell in the diagonal of exit, the path tells them to move diagonally,
-        #  but they can't bc of exitAgent, however, they don't get remove from model. solution, move this function to
-        #  ExitAgent step(), so it can remove e.g. only 1 agent at a time, but from one of the cells in contact with it
+        # TODO: ExitAgent will take out the people.
         if self._reached_exit():
             self.model.remove_agent(self, Reasons.SAVED)
 
@@ -191,10 +183,6 @@ class CivilianAgent(Agent):
         new_pos = norm_dir + (my_x, my_y)
         new_pos = np.round(new_pos).astype(int)
         # self.model.grid.move_agent(self, new_pos)
-        # TODO: It's not checking if the position is empty before moving agent,
-        #  program crashes. Also, if agent is sourrounded by multiple FireAgents,
-        #  this func will be called multiple times in a row. I think the whole array
-        #  of neighbors should be passed as argument and here pick only ONE fire
-        #  agent from where to escape.
+        # TODO: TBD - still not clear how to do it
         if self.model.grid.is_cell_empty(new_pos.tolist()):
             self.model.grid.move_agent(self, new_pos.tolist())
