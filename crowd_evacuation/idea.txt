@@ -94,4 +94,4 @@ Model
   remove agents from graph (don't without storing it  /  input graph for A*)
 - 'moving' function : 'avoid fire' -> not going opposite side of fire
                       when the known path is NONE -> random direction & move    (DIEGO / SOHYUNG)
-- willingness : 'commnted' -> TBD... (DIEGO)
+- willingness : 'commented' -> TBD... (DIEGO)
