@@ -19,7 +19,7 @@ class CivilianAgent(Agent):
         self._weight = random.uniform(40, 100)
         self._goal = None
         self._interacted_with = []
-        self._exit_point = None
+        self._exit_point = (None, None)  # a tuple that stores the exit of the agent
         self._speed = self.calculate_speed(self._age, self._weight)
 
     def calculate_speed(self, age, weight):
@@ -90,20 +90,25 @@ class CivilianAgent(Agent):
         path = path_finding.find_path(self.model.graph, self.pos, self._goal)
         # self._take_shortest_path(possible_steps)
         if path is not None:
-            # if the distance to the exit is shortest than the speed of the agent,
-            # move the agent in front of the exit
-            if len(path) < self._speed:
-                if self.model.grid.is_cell_empty(path[len(path)-2]):
-                    self.model.grid.move_agent(self, path[len(path)-2])
+            # if the distance to the exit is smaller or equal than the speed of the agent,
+            # it means that the agent will run through the exit so remove it from the model
+            if len(path) <= self._speed:
+                if path[len(path)-1] == self._goal:
+                    self._exit_point = path[len(path)-1]
+                    self.model.remove_agent(self, Reasons.SAVED)
             # otherwise, move the agent as many squares as indicated by the speed
             else:
-                if self.model.grid.is_cell_empty(path[self._speed-2]):
-                    self.model.grid.move_agent(self, path[self._speed-2])
+                if self.model.grid.is_cell_empty(path[self._speed]):
+                    self.model.grid.move_agent(self, path[self._speed])
+                # if the square is occupied, check if it is the goal. If so remove the agent
+                else:
+                    if path[self._speed] == self._goal:
+                        self._exit_point = path[self._speed]
+                        self.model.remove_agent(self, Reasons.SAVED)
+                # add that to the exit point and remove the agent
         # TODO: When agents are in a cell in the diagonal of exit, the path tells them to move diagonally,
         #  but they can't bc of exitAgent, however, they don't get remove from model. solution, move this function to
         #  ExitAgent step(), so it can remove e.g. only 1 agent at a time, but from one of the cells in contact with it
-        if self._reached_exit():
-            self.model.remove_agent(self, Reasons.SAVED)
 
     def _absolute_distance(self, x, y):
         """
@@ -142,14 +147,18 @@ class CivilianAgent(Agent):
                 break
             del possible_steps[possible_steps.index(new_position)]
 
-    def _reached_exit(self):
+    def _reached_exit(self, path, goal):
         """
-        :return: (bool): if the agent has been saved or not
+        :param path:
+        :param goal:
+        :return: (bool) if the agent reached the exit or not
         """
-        for exit_neighbour in self.model.grid.get_neighborhood(self._goal, moore=True):
-            if self.pos == exit_neighbour:
-                return True
-        return False
+        if path[len(path) - 1] == goal:
+            self._exit_point = path[len(path) - 1]
+            return True
+        else:
+            return False
+
 
     def _find_closest_agent(self, agents):
         """
