@@ -2,16 +2,26 @@ from mesa import Agent
 from crowd_evacuation.reasons import Reasons
 import random
 import numpy as np
-from crowd_evacuation import path_finding
+from crowd_evacuation.path_finding import GridGraph
 
 
 class CivilianAgent(Agent):
 
     def __init__(self, unique_id, model, known_exits, model_graph):
+        """
+        Creates the civilian Agent
+
+        Args:
+            unique_id: unique id for this agent
+            model: the model where this agent belongs
+            known_exits: List of known exits by the agent
+            model_graph (GridGraph): graph that represents the grid with the nodes being spaces where an agent can be (e.g. without walls)
+
+        """
         super().__init__(unique_id, model)
 
         self._known_exits = known_exits
-        self._knowledge_graph = model_graph.copy()
+        self._knowledge_graph = model_graph.clone()
         self._strategy = "random"
         self._willingness_to_follow_steward = random.uniform(0, 1)
         self._speed = random.uniform(3, 10)
@@ -62,14 +72,14 @@ class CivilianAgent(Agent):
         # the agent from the schedule and the grid if the agent has exited the building.
         if self._goal is None:
             self._determine_closest_exit()
-        temp_graph = self._knowledge_graph.copy()
-        # neighbours = self.model.grid.get_neighborhood(self.pos, moore=True, radius=2, include_center=False)
-        neigh = self.model.grid.get_neighbors(self.pos, moore=True, radius=2, include_center=False)
-        for neighbour in self.model.grid.iter_neighbors(self.pos, moore=True, radius=2, include_center=False):
-            if isinstance(neighbour, CivilianAgent):
-                temp_graph.remove_node(tuple(neighbour.pos))
 
-        path = path_finding.find_path(temp_graph, self.pos, self._goal)
+        # TODO: this list will be drawn from the visible objects when its done
+        neighbours = self.model.grid.get_neighbors(self.pos, moore=True, radius=2, include_center=False)
+        avoid_agents_in_pos = []
+        for agent in neighbours:
+            if isinstance(agent, CivilianAgent):
+                avoid_agents_in_pos.append(tuple(agent.pos))
+        path = self._knowledge_graph.find_path(self.pos, self._goal, avoid_agents_in_pos)
         # self._take_shortest_path(possible_steps)
         if path is not None:
             if self.model.grid.is_cell_empty(path[1]):
