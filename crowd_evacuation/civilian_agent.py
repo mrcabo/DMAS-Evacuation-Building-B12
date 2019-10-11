@@ -90,25 +90,34 @@ class CivilianAgent(Agent):
         path = path_finding.find_path(self.model.graph, self.pos, self._goal)
         # self._take_shortest_path(possible_steps)
         if path is not None:
-            # if the distance to the exit is smaller or equal than the speed of the agent,
-            # it means that the agent will run through the exit so remove it from the model
             if len(path) <= self._speed:
-                if path[len(path)-1] == self._goal:
-                    self._exit_point = path[len(path)-1]
-                    self.model.remove_agent(self, Reasons.SAVED)
-            # otherwise, move the agent as many squares as indicated by the speed
+                self.decide_move_action(len(path), path)
             else:
-                if self.model.grid.is_cell_empty(path[self._speed]):
-                    self.model.grid.move_agent(self, path[self._speed])
-                # if the square is occupied, check if it is the goal. If so remove the agent
-                else:
-                    if path[self._speed] == self._goal:
-                        self._exit_point = path[self._speed]
-                        self.model.remove_agent(self, Reasons.SAVED)
-                # add that to the exit point and remove the agent
+                # truncated the path according to the speed of the agent
+                del(path[self._speed+1:])
+                self.decide_move_action(self._speed + 1, path)
+
         # TODO: When agents are in a cell in the diagonal of exit, the path tells them to move diagonally,
         #  but they can't bc of exitAgent, however, they don't get remove from model. solution, move this function to
         #  ExitAgent step(), so it can remove e.g. only 1 agent at a time, but from one of the cells in contact with it
+
+    def decide_move_action(self, upper_bound, path):
+        """
+        :param upper_bound:
+        :param path:
+        :return: determines where the agents have to move and if the agent have been saved
+        """
+        for i in range(1, upper_bound):
+            # move the agent as long as the there are empty squares
+            if self.model.grid.is_cell_empty(path[i]):
+                self.model.grid.move_agent(self, path[i])
+            # if the cell is not empty check if it is the goal
+            elif path[i] == self._goal:
+                self._exit_point = path[i]
+                self.model.remove_agent(self, Reasons.SAVED)
+            # else break the loop and wait next turn
+            else:
+                break
 
     def _absolute_distance(self, x, y):
         """
@@ -147,19 +156,6 @@ class CivilianAgent(Agent):
                 break
             del possible_steps[possible_steps.index(new_position)]
 
-    def _reached_exit(self, path, goal):
-        """
-        :param path:
-        :param goal:
-        :return: (bool) if the agent reached the exit or not
-        """
-        if path[len(path) - 1] == goal:
-            self._exit_point = path[len(path) - 1]
-            return True
-        else:
-            return False
-
-
     def _find_closest_agent(self, agents):
         """
         :param  agents
@@ -177,7 +173,7 @@ class CivilianAgent(Agent):
     def _find_exit(self, surrounding_agents):
         """
         :param  surrounding agents
-        :return: the closest exit to the agent
+        :return: the closest exit to the agent in the surroundings
         """
         surrounding_exits = filter(lambda a: isinstance(a, ExitAgent), surrounding_agents)
         return self._find_closest_agent(surrounding_exits)
