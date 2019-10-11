@@ -49,7 +49,6 @@ class CivilianAgent(Agent):
         print("Willingness to follow steward: ", self._willingness_to_follow_steward)
         print("Speed (m/s): ", self._speed)
         print("Age (years): ", self._age)
-       # print("Gender: ", self._gender)
         print("Size (kg): ", self._weight)
         print("Closest exit: ", self._goal)
         print("Interacted with: ", self._interacted_with)
@@ -209,7 +208,7 @@ class CivilianAgent(Agent):
         :return: surrounding agents, possible moving positions and obstacles
         """
         # the list of objects surrounding an agent, 5x5 range, exclude the center where the agent is standing
-        surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=5)
+        surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=self._speed+2)
         contacting_objects = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
         possible_moving_range = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False, radius=1)
 
