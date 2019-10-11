@@ -35,6 +35,9 @@ def create_graph(model):
         if isinstance(agent, WallAgent):
             graph.remove_node(tuple(agent.pos))
 
+    for node in graph.nodes:
+        graph.nodes[node]["walkable"] = True
+
     return graph
 
 

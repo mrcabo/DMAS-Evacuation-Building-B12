@@ -11,7 +11,7 @@ from crowd_evacuation.fire_agent import FireAgent
 from crowd_evacuation.steward_agent import StewardAgent
 from crowd_evacuation.civilian_agent import CivilianAgent
 from crowd_evacuation.reasons import Reasons
-from crowd_evacuation.path_finding import GridGraph
+from crowd_evacuation import path_finding
 
 
 class EvacuationModel(Model):
@@ -45,7 +45,7 @@ class EvacuationModel(Model):
             exits_BB.append((self.grid.width - 1, 14 + i))
 
         self.draw_environment(exits_BB)
-        self.graph = GridGraph(self)
+        self.graph = path_finding.create_graph(self)
 
         # Create fire DEBUG
         fire_initial_pos = [(25, 25)]
@@ -61,7 +61,7 @@ class EvacuationModel(Model):
             # an agent will know at least one exit from the pos_exits
             # known_exits = random.sample(middle_of_known_exits, randint(1, len(middle_of_known_exits)))
             known_exits = exits_BB[-3:]
-            a = CivilianAgent(i, self, known_exits, self.graph)
+            a = CivilianAgent(i, self, known_exits)
 
             self.schedule.add(a)
             # Add the agent to a random grid cell
@@ -85,7 +85,6 @@ class EvacuationModel(Model):
         return bottom_left[0] < point[0] < top_right[0] and bottom_left[1] < point[1] < top_right[1]
 
     def step(self):
-        # self.graph = path_finding.update_graph(self)
         self.schedule.step()
         # collect data
         self.datacollector.collect(self)
