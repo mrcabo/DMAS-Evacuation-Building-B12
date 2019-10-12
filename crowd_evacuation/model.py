@@ -1,5 +1,3 @@
-import random
-
 import numpy as np
 
 from mesa import Model
@@ -7,11 +5,13 @@ from mesa.time import RandomActivation
 from mesa.space import SingleGrid
 from mesa.datacollection import DataCollector
 
-from crowd_evacuation.agents import FireAgent, StewardAgent, WallAgent, ExitAgent, Reasons
+from crowd_evacuation.exit_agent import ExitAgent
+from crowd_evacuation.wall_agent import WallAgent
+from crowd_evacuation.fire_agent import FireAgent
+from crowd_evacuation.steward_agent import StewardAgent
 from crowd_evacuation.civilian_agent import CivilianAgent
+from crowd_evacuation.reasons import Reasons
 from crowd_evacuation import path_finding
-import random
-from random import randint
 
 
 class EvacuationModel(Model):
@@ -24,6 +24,7 @@ class EvacuationModel(Model):
         # self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
         self.agents_alive = N  # Agents alive and inside the building
         # TODO: maybe have an agents_saved array so we know through which exits these agents were saved?
+        # TODO: dictionary with the pos: people saved through that exit
         self.agents_saved = 0  # Agents that managed to get out
         self.agents_killed = 0  # Agents that perished during the evacuation
         self.grid = SingleGrid(height, width, False)
@@ -35,7 +36,6 @@ class EvacuationModel(Model):
                              "Agents saved": "agents_saved"}
         )
 
-        # TODO: exits should be defined only once here, and passed to draw environment to place "agents
         # Create exits
 
         exits_BB = [(0, 5),
@@ -48,7 +48,7 @@ class EvacuationModel(Model):
         self.graph = path_finding.create_graph(self)
 
         # Create fire DEBUG
-        fire_initial_pos = [(40, 16)]
+        fire_initial_pos = [(25, 25)]
         for pos in fire_initial_pos:
             fire_agent = FireAgent(pos, self)
             self.schedule.add(fire_agent)
@@ -85,7 +85,6 @@ class EvacuationModel(Model):
         return bottom_left[0] < point[0] < top_right[0] and bottom_left[1] < point[1] < top_right[1]
 
     def step(self):
-        self.graph = path_finding.update_graph(self)
         self.schedule.step()
         # collect data
         self.datacollector.collect(self)

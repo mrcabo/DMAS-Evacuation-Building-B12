@@ -1,5 +1,5 @@
 from mesa import Agent
-from crowd_evacuation.agents import Reasons, FireAgent
+from crowd_evacuation.reasons import Reasons
 import random
 import numpy as np
 from crowd_evacuation import path_finding
@@ -16,7 +16,7 @@ class CivilianAgent(Agent):
         self._age = random.randrange(15, 65)
         self._gender = random.choice(["M", "F"])
         self._size = random.uniform(40, 100)
-        self._closest_exit = None  # TODO: I think this one should be called target or goal
+        self._goal = None
         self._interacted_with = []
         self._speed = self.calculate_speed(self._age, self._size)
 
@@ -36,7 +36,7 @@ class CivilianAgent(Agent):
         print("Age (years): ", self._age)
         print("Gender: ", self._gender)
         print("Size (kg): ", self._size)
-        print("Closest exit: ", self._closest_exit)
+        print("Closest exit: ", self._goal)
         print("Interacted with: ", self._interacted_with)
         print()
         print()
@@ -46,12 +46,6 @@ class CivilianAgent(Agent):
 
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
-        # TODO : The civil agent should move/walk around first.
-        #  Otherwise they don't move till the fire is getting close to them.
-
-        # TODO: If there is an exit in surrounding_agents, add it to list of known exits. probably he'll want to go to
-        #  that one
-        # TODO: This piece is making the path finding func to crash. Needs diagnosing
         # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
         # if any(isinstance(x, FireAgent) for x in surrounding_agents):
         #     closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
@@ -70,16 +64,21 @@ class CivilianAgent(Agent):
 
         # Else if there is no immediate danger for the agent, move the agent towards the closest exit. Remove
         # the agent from the schedule and the grid if the agent has exited the building.
-        if self._closest_exit is None:
+        if self._goal is None:
             self._determine_closest_exit()
-        path = path_finding.find_path(self.model.graph, self.pos, self._closest_exit)
+
+        neighbours = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=2)
+        non_walkable = []
+        for neighbour in neighbours:
+            if isinstance(neighbour, CivilianAgent):
+                non_walkable.append(neighbour.pos)
+
+        best_path = path_finding.find_path(self.model.graph, self.pos, self._goal, non_walkable=non_walkable)
         # self._take_shortest_path(possible_steps)
-        if path is not None:
-            if self.model.grid.is_cell_empty(path[1]):
-                self.model.grid.move_agent(self, path[1])
-        # TODO: When agents are in a cell in the diagonal of exit, the path tells them to move diagonally,
-        #  but they can't bc of exitAgent, however, they don't get remove from model. solution, move this function to
-        #  ExitAgent step(), so it can remove e.g. only 1 agent at a time, but from one of the cells in contact with it
+        if best_path is not None:
+            if self.model.grid.is_cell_empty(best_path[1]):
+                self.model.grid.move_agent(self, best_path[1])
+        # TODO: ExitAgent will take out the people.
         if self._reached_exit():
             self.model.remove_agent(self, Reasons.SAVED)
 
@@ -89,11 +88,11 @@ class CivilianAgent(Agent):
     # _determine_closest_exit: Determines the closest known exit, based on the absolute distance.
     def _determine_closest_exit(self):
         distances = [self._absolute_distance(self.pos, x) for x in self._known_exits]
-        self._closest_exit = self._known_exits[distances.index(min(distances))]
+        self._goal = self._known_exits[distances.index(min(distances))]
 
     # _take_shortest_path: Takes the shortest path to the closest exit.
     def _take_shortest_path(self, possible_steps):
-        distances = [self._absolute_distance(self._closest_exit, x) for x in possible_steps]
+        distances = [self._absolute_distance(self._goal, x) for x in possible_steps]
 
         # Find the closest available position to the closest exit around the agent and move the agent there.
         while distances:
@@ -122,7 +121,7 @@ class CivilianAgent(Agent):
         Returns:
             (bool): if the agent has been saved or not
         """
-        for exit_neighbour in self.model.grid.get_neighborhood(self._closest_exit, moore=False):
+        for exit_neighbour in self.model.grid.get_neighborhood(self._goal, moore=True):
             if self.pos == exit_neighbour:
                 return True
         return False
@@ -197,10 +196,6 @@ class CivilianAgent(Agent):
         new_pos = norm_dir + (my_x, my_y)
         new_pos = np.round(new_pos).astype(int)
         # self.model.grid.move_agent(self, new_pos)
-        # TODO: It's not checking if the position is empty before moving agent,
-        #  program crashes. Also, if agent is sourrounded by multiple FireAgents,
-        #  this func will be called multiple times in a row. I think the whole array
-        #  of neighbors should be passed as argument and here pick only ONE fire
-        #  agent from where to escape.
+        # TODO: TBD - still not clear how to do it
         if self.model.grid.is_cell_empty(new_pos.tolist()):
             self.model.grid.move_agent(self, new_pos.tolist())

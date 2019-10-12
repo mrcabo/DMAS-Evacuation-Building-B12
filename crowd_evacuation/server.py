@@ -3,10 +3,12 @@ from .model import EvacuationModel
 from mesa.visualization.modules import CanvasGrid,TextElement, ChartModule, PieChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
-from crowd_evacuation.agents import FireAgent, WallAgent, ExitAgent
+from crowd_evacuation.exit_agent import ExitAgent
+from crowd_evacuation.wall_agent import WallAgent
+from crowd_evacuation.fire_agent import FireAgent
 from crowd_evacuation.civilian_agent import CivilianAgent
-from crowd_evacuation.ModelLegend import ModelLegend
-from crowd_evacuation.IntroductionText import IntroductionText
+from crowd_evacuation.model_legend import ModelLegend
+from crowd_evacuation.introduction_text import IntroductionText
 
 COLORS_FIRE = {"On Fire": "#880000",
                "Burned Out": "#000000"}
