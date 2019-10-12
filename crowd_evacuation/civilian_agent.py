@@ -3,7 +3,7 @@ from crowd_evacuation.reasons import Reasons
 import random
 import numpy as np
 from crowd_evacuation import path_finding
-
+from crowd_evacuation.fire_agent import FireAgent
 
 class CivilianAgent(Agent):
 
@@ -19,6 +19,7 @@ class CivilianAgent(Agent):
         self._goal = None
         self._interacted_with = []
         self._speed = self.calculate_speed(self._age, self._size)
+        self.observed_fire = set()
 
     def calculate_speed(self, age, size):
         normal_speed = random.uniform(20, 30)
@@ -46,6 +47,12 @@ class CivilianAgent(Agent):
 
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
+
+        # As perceptional memory of Civil_agent, they will remember the location of observed fire
+        for surrounding_agent in surrounding_agents:
+            if isinstance(surrounding_agent, FireAgent):
+                self.observed_fire.add(surrounding_agent.pos)
+
         # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
         # if any(isinstance(x, FireAgent) for x in surrounding_agents):
         #     closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
@@ -67,17 +74,20 @@ class CivilianAgent(Agent):
         if self._goal is None:
             self._determine_closest_exit()
 
-        neighbours = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=2)
         non_walkable = []
-        for neighbour in neighbours:
+        for neighbour in contacting_objects:
             if isinstance(neighbour, CivilianAgent):
                 non_walkable.append(neighbour.pos)
 
         best_path = path_finding.find_path(self.model.graph, self.pos, self._goal, non_walkable=non_walkable)
         # self._take_shortest_path(possible_steps)
-        if best_path is not None:
-            if self.model.grid.is_cell_empty(best_path[1]):
-                self.model.grid.move_agent(self, best_path[1])
+        if best_path is not None and self.model.grid.is_cell_empty(best_path[1]):
+            self.model.grid.move_agent(self, best_path[1])
+        else:
+            # When agent doesn't have any known exit or their possible route is blocked by fire,
+            # they will take one of possible_steps
+            if possible_steps:
+                self.model.grid.move_agent(self, random.choice(possible_steps))
         # TODO: ExitAgent will take out the people.
         if self._reached_exit():
             self.model.remove_agent(self, Reasons.SAVED)
