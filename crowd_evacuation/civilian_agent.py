@@ -4,6 +4,8 @@ import random
 import numpy as np
 from crowd_evacuation import path_finding
 from crowd_evacuation.fire_agent import FireAgent
+from crowd_evacuation.exit_agent import ExitAgent
+
 
 class CivilianAgent(Agent):
 
@@ -52,7 +54,8 @@ class CivilianAgent(Agent):
         for surrounding_agent in surrounding_agents:
             if isinstance(surrounding_agent, FireAgent):
                 self.observed_fire.add(surrounding_agent.pos)
-
+            elif isinstance(surrounding_agent, ExitAgent):
+                self._goal = surrounding_agent.pos
         # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
         # if any(isinstance(x, FireAgent) for x in surrounding_agents):
         #     closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
@@ -89,8 +92,9 @@ class CivilianAgent(Agent):
             if possible_steps:
                 self.model.grid.move_agent(self, random.choice(possible_steps))
         # TODO: ExitAgent will take out the people.
-        if self._reached_exit():
-            self.model.remove_agent(self, Reasons.SAVED)
+        # if any([isinstance(object, ExitAgent) for object in contacting_objects]):
+        # if self._reached_exit():
+        #     self.model.remove_agent(self, Reasons.SAVED)
 
     def _absolute_distance(self, x, y):
         return abs(x[0] - y[0]) + abs(x[1] - y[1])

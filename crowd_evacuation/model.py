@@ -181,6 +181,7 @@ class EvacuationModel(Model):
                 agent = self.grid.get_cell_list_contents(ext)
                 self.grid.remove_agent(agent[0])
             # Place exit
+            self.schedule.add(e)
             self.grid.place_agent(e, ext)
 
     def spread_fire(self, fire_agent):
