@@ -106,10 +106,7 @@ class CivilianAgent(Agent):
             # they will take one of possible_steps
             if possible_steps:
                 self.model.grid.move_agent(self, random.choice(possible_steps))
-        # TODO: ExitAgent will take out the people.
-        # if any([isinstance(object, ExitAgent) for object in contacting_objects]):
-        # if self._reached_exit():
-        #     self.model.remove_agent(self, Reasons.SAVED)
+
 
     def _absolute_distance(self, x, y):
         return abs(x[0] - y[0]) + abs(x[1] - y[1])
