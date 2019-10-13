@@ -18,10 +18,12 @@ class EvacuationModel(Model):
     """A model of the evacuation of a building
     """
 
-    def __init__(self, N=10, K=0, width=50, height=50):
+    def __init__(self, N=10, K=0, width=50, height=50, fire_x=1, fire_y=1):
         self.num_civilians = N
         self.num_stewards = K
         self.pos_exits = []  # Position of every exit of the building
+        self.fire_initial_pos = (fire_x, fire_y)
+        self.warning_UI = ""
         # self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
         self.agents_alive = N + K  # Agents alive and inside the building
         # TODO: maybe have an agents_saved array so we know through which exits these agents were saved?
@@ -48,13 +50,19 @@ class EvacuationModel(Model):
         self.draw_environment(exits_BB)
         self.graph = path_finding.create_graph(self)
 
-        # Create fire DEBUG
-        fire_initial_pos = [(25, 25), (40, 15)]
-        for pos in fire_initial_pos:
-            fire_agent = FireAgent(pos, self)
-            self.schedule.add(fire_agent)
-            self.grid.place_agent(fire_agent, pos)
-
+        # Create fire
+        # for pos in self.fire_initial_pos:  # Only 1 source of fire since we are setting it from UI
+        x, y = self.fire_initial_pos
+        if not self.is_inside_square((x, y), (0, 29), (25, 39)) and not self.is_inside_square(
+                (x, y), (0, 10), (25, 20)):
+            pos = self.fire_initial_pos
+        else:
+            pos = (1, 1)
+            self.warning_UI = "<b>WARNING:</b> Sorry but the position of the fire is outside of the building, " \
+                              "change the setting and click reset simulation."
+        fire_agent = FireAgent(pos, self)
+        self.schedule.add(fire_agent)
+        self.grid.place_agent(fire_agent, pos)
         # Create civilian agents
         # middle_of_known_exits = exits_BB[2::5]
         for i in range(self.num_civilians):
@@ -105,7 +113,7 @@ class EvacuationModel(Model):
 
     @staticmethod
     def is_inside_square(point, bottom_left, top_right):
-        return bottom_left[0] < point[0] < top_right[0] and bottom_left[1] < point[1] < top_right[1]
+        return bottom_left[0] <= point[0] <= top_right[0] and bottom_left[1] <= point[1] <= top_right[1]
 
     def step(self):
         self.schedule.step()
