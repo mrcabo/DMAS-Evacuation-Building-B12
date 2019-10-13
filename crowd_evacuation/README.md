@@ -1,23 +1,23 @@
-# Schelling Segregation Model
+# Crowd Evacuation Model
 
 ## Summary
 
-Description of our model
+**TODO:** Description of our model
 
 ## Installation
 
 To install the dependencies use pip and the requirements.txt in this directory. e.g.
 
-```
-    $ pip install -r requirements.txt
+```bash
+pip install -r requirements.txt
 ```
 
 ## How to Run
 
-To run the model interactively, run ``mesa runserver`` in this directory. e.g.
+To run the model, run:
 
-```
-    $ mesa runserver
+```bash
+python run.py
 ```
 
 Then open your browser to [http://127.0.0.1:8521/](http://127.0.0.1:8521/) and press Reset, then Run.
@@ -26,8 +26,10 @@ Then open your browser to [http://127.0.0.1:8521/](http://127.0.0.1:8521/) and p
 
 * ``run.py``: Launches a model visualization server.
 * ``model.py``: Contains the overall model class.
-* ``agents.py``: Contains the agents classes.
+* ``<agent_name>_agent.py``: Contains the agents classes.
 * ``server.py``: Defines classes for visualizing the model in the browser via Mesa's modular server, and instantiates a visualization server.
+* ``path_finding.py``: Uses a graph that represents the grid, and finds the optimal path between 2 points using 
+A* algorithm.
 
 ## Further Reading
 

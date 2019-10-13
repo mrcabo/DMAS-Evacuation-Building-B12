@@ -1,17 +1,18 @@
 from mesa.visualization.ModularVisualization import ModularServer
 from .model import EvacuationModel
-from mesa.visualization.modules import CanvasGrid,TextElement, ChartModule, PieChartModule
+from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
 from crowd_evacuation.exit_agent import ExitAgent
 from crowd_evacuation.wall_agent import WallAgent
 from crowd_evacuation.fire_agent import FireAgent
 from crowd_evacuation.civilian_agent import CivilianAgent
+from crowd_evacuation.steward_agent import StewardAgent
 from crowd_evacuation.model_legend import ModelLegend
 from crowd_evacuation.introduction_text import IntroductionText
 
-COLORS_FIRE = {"On Fire": "#880000",
-               "Burned Out": "#000000"}
+COLORS_FIRE = {"On Fire": "#FF0000",
+               "Burned Out": "#800000"}
 
 
 def agent_portrayal(agent):
@@ -30,12 +31,12 @@ def agent_portrayal(agent):
 
     if type(agent) is CivilianAgent:
         portrayal["Shape"] = "circle"
-        if agent._gender == 'M':
-            portrayal["Color"] = "blue"
+        if agent._age <= 45:
+            portrayal["Color"] = "CornflowerBlue"
         else:
-            portrayal["Color"] = "purple"
+            portrayal["Color"] = "DarkBlue"
         portrayal["Filled"] = "true"
-        portrayal["r"] = agent._size/100
+        portrayal["r"] = agent._weight/100
         portrayal["Layer"] = 1
 
     elif type(agent) is WallAgent:
@@ -63,30 +64,36 @@ def agent_portrayal(agent):
         portrayal["r"] = 0.8
         portrayal["Layer"] = 0
 
+    elif type(agent) is StewardAgent:
+        portrayal["Shape"] = "circle"
+        portrayal["Color"] = "gold"
+        portrayal["Filled"] = "true"
+        portrayal["r"] = 1.3
+        portrayal["Layer"] = 1
+
     return portrayal
 
 
 line_chart = ChartModule([{"Label": "Agents alive", "Color": "gray"},
                           {"Label": "Agents killed", "Color": "red"},
                           {"Label": "Agents saved", "Color": "green"}])
-pie_chart = PieChartModule([{"Label": "Agents alive", "Color": "gray"},
-                            {"Label": "Agents killed", "Color": "red"},
-                            {"Label": "Agents saved", "Color": "green"}])
 
 introduction = IntroductionText()
 grid = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 legend = ModelLegend()
 
 model_params = {
-    "N": UserSettableParameter('slider', "Number of agents", 100, 1, 1000, 1,
-                               description="Choose how many agents to include in the model"),
+    "N": UserSettableParameter('slider', "Number of civilian agents", 100, 1, 1000, 1,
+                               description="Choose how many civilian agents to include in the model"),
+    "K": UserSettableParameter('slider', "Number of steward agents", 0, 0, 30, 1,
+                               description="Choose how many steward agents to include in the model"),
     "width": 50,
     "height": 50
 }
 
 
 server = ModularServer(EvacuationModel,
-                       [introduction, grid, legend, line_chart, pie_chart],
+                       [introduction, grid, legend, line_chart],
                        "Evacuation model",
                        model_params)
 server.port = 8521
