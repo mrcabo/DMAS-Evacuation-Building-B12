@@ -23,7 +23,8 @@ class CivilianAgent(Agent):
         self._exit_point = (None, None)  # a tuple that stores the exit of the agent
         self._visual_range = self.calculate_visual_range(self._age)
         self._speed = self.calculate_speed(self._visual_range, self._weight)
-        self.observed_fire = set()
+        self._observed_fire = set()
+        self._being_risky = random.randrange(0, 2)
 
     def calculate_visual_range(self, age):
         """
@@ -69,12 +70,20 @@ class CivilianAgent(Agent):
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
 
-        # As perceptional memory of Civil_agent, they will remember the location of observed fire
         for surrounding_agent in surrounding_agents:
+            # As perceptional memory of Civil_agent, they will remember the location of observed fire.
+            # Note, depending on the agent's level of being risky,
+            # his walkable distance/range from fire during moving is decided.
             if isinstance(surrounding_agent, FireAgent):
-                self.observed_fire.add(surrounding_agent.pos)
+                extended_fire_area = set(self.model.grid.get_neighborhood(surrounding_agent.pos, moore=True,
+                                                                          include_center=True,
+                                                                          radius=self._being_risky))
+                self._observed_fire = self._observed_fire.union(extended_fire_area)
+            # Also, if there is exit in agent's vision range, go there
             elif isinstance(surrounding_agent, ExitAgent):
-                self._goal = surrounding_agent.pos
+                self._known_exits.append(surrounding_agent.pos)
+                self._determine_closest_exit()
+
         # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
         # if any(isinstance(x, FireAgent) for x in surrounding_agents):
         #     closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
@@ -83,6 +92,7 @@ class CivilianAgent(Agent):
 
         # Else if there is any other civilian in the objects surrounding the agent, find the closest civilian
         # that did not interact with the agent yet and make them interact to exchange information.
+        # TODO: how big is the possible range for the interaction function? Should be smaller(<=) than vision range?
         if any(isinstance(x, CivilianAgent) for x in surrounding_agents):
             closest_new_civilian = self._find_closest_new_civilian(surrounding_agents)
             if closest_new_civilian is not None:
@@ -96,10 +106,15 @@ class CivilianAgent(Agent):
         if self._goal is None:
             self._determine_closest_exit()
 
-        non_walkable = []
+        non_walkable = set()
         for neighbour in contacting_objects:
             if isinstance(neighbour, CivilianAgent):
-                non_walkable.append(neighbour.pos)
+                non_walkable.add(neighbour.pos)
+
+        # Here, agent's non-walkable range from fire also added.
+        # because when we create the graph, WallAgent is subtracted on the graph.
+        # So, when add non-walkable area, consider it is available grid of the graph.
+        non_walkable = non_walkable.union(self._observed_fire).intersection(set(self.model.graph.nodes.keys()))
 
         best_path = path_finding.find_path(self.model.graph, self.pos, self._goal, non_walkable=non_walkable)
         # self._take_shortest_path(possible_steps)
