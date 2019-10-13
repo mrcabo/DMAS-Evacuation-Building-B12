@@ -53,10 +53,13 @@ class CivilianAgent(Agent):
         for surrounding_agent in surrounding_agents:
             # As perceptional memory of Civil_agent, they will remember the location of observed fire
             if isinstance(surrounding_agent, FireAgent):
-                self.observed_fire.add(surrounding_agent.pos)
+                self._observed_fire.add(surrounding_agent.pos)
             # Also, if there is exit in agent's vision range, go there
             elif isinstance(surrounding_agent, ExitAgent):
-                self._goal = surrounding_agent.pos
+                self._known_exits.append(surrounding_agent.pos)
+                self._determine_closest_exit()
+            # elif isinstance(surrounding_agent, CivilianAgent):
+            #    closest_new_civilian = self._find_closest_new_civilian(surrounding_agents)
 
         # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
         # if any(isinstance(x, FireAgent) for x in surrounding_agents):
