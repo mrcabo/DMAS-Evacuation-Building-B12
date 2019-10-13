@@ -107,7 +107,6 @@ class CivilianAgent(Agent):
             if possible_steps:
                 self.model.grid.move_agent(self, random.choice(possible_steps))
 
-
     def _absolute_distance(self, x, y):
         return abs(x[0] - y[0]) + abs(x[1] - y[1])
 
