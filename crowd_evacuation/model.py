@@ -18,11 +18,12 @@ class EvacuationModel(Model):
     """A model of the evacuation of a building
     """
 
-    def __init__(self, N=10, width=50, height=50):
-        self.num_agents = N
+    def __init__(self, N=10, K=0, width=50, height=50):
+        self.num_civilians = N
+        self.num_stewards = K
         self.pos_exits = []  # Position of every exit of the building
         # self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
-        self.agents_alive = N  # Agents alive and inside the building
+        self.agents_alive = N + K  # Agents alive and inside the building
         # TODO: maybe have an agents_saved array so we know through which exits these agents were saved?
         # TODO: dictionary with the pos: people saved through that exit
         self.agents_saved = 0  # Agents that managed to get out
@@ -54,14 +55,36 @@ class EvacuationModel(Model):
             self.schedule.add(fire_agent)
             self.grid.place_agent(fire_agent, pos)
 
-        # Create agents
+        # Create civilian agents
         # middle_of_known_exits = exits_BB[2::5]
-        for i in range(self.num_agents):
+        for i in range(self.num_civilians):
 
-            # an agent will know at least one exit from the pos_exits
+            # a civilian agent will know at least one exit from the pos_exits
             # known_exits = random.sample(middle_of_known_exits, randint(1, len(middle_of_known_exits)))
             known_exits = exits_BB[-3:]
             a = CivilianAgent(i, self, known_exits)
+
+            self.schedule.add(a)
+            # Add the agent to a random grid cell
+
+            while True:
+                # pick the random coordinate
+                x = self.random.randrange(1, self.grid.width - 1)
+                y = self.random.randrange(1, self.grid.height - 1)
+                # check if the point is empty and inside of the building
+                if self.grid.is_cell_empty((x, y)) and not self.is_inside_square((x, y), (0, 29), (25, 39)) \
+                        and not self.is_inside_square((x, y), (0, 10), (25, 20)):
+                    break
+
+            self.grid.place_agent(a, (x, y))
+
+        # Create steward agents
+        # middle_of_known_exits = exits_BB[2::5]
+        for i in range(self.num_civilians, self.num_civilians + self.num_stewards):
+
+            # a steward agent will know all exits.
+            known_exits = exits_BB
+            a = StewardAgent(i, self, known_exits)
 
             self.schedule.add(a)
             # Add the agent to a random grid cell

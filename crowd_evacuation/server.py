@@ -7,6 +7,7 @@ from crowd_evacuation.exit_agent import ExitAgent
 from crowd_evacuation.wall_agent import WallAgent
 from crowd_evacuation.fire_agent import FireAgent
 from crowd_evacuation.civilian_agent import CivilianAgent
+from crowd_evacuation.steward_agent import StewardAgent
 from crowd_evacuation.model_legend import ModelLegend
 from crowd_evacuation.introduction_text import IntroductionText
 
@@ -63,6 +64,13 @@ def agent_portrayal(agent):
         portrayal["r"] = 0.8
         portrayal["Layer"] = 0
 
+    elif type(agent) is StewardAgent:
+        portrayal["Shape"] = "circle"
+        portrayal["Color"] = "gold"
+        portrayal["Filled"] = "true"
+        portrayal["r"] = 1.3
+        portrayal["Layer"] = 1
+
     return portrayal
 
 
@@ -78,8 +86,10 @@ grid = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 legend = ModelLegend()
 
 model_params = {
-    "N": UserSettableParameter('slider', "Number of agents", 100, 1, 1000, 1,
-                               description="Choose how many agents to include in the model"),
+    "N": UserSettableParameter('slider', "Number of civilian agents", 100, 1, 1000, 1,
+                               description="Choose how many civilian agents to include in the model"),
+    "K": UserSettableParameter('slider', "Number of steward agents", 0, 0, 30, 1,
+                               description="Choose how many steward agents to include in the model"),
     "width": 50,
     "height": 50
 }
