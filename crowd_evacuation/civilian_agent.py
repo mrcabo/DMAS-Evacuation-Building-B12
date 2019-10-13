@@ -20,10 +20,10 @@ class CivilianAgent(Agent):
         self._goal = None
         self._interacted_with = []
         self._exit_point = (None, None)  # a tuple that stores the exit of the agent
-        self._visual_range = self.calculate_visual_rage(self._age)
+        self._visual_range = self.calculate_visual_range(self._age)
         self._speed = self.calculate_speed(self._visual_range, self._weight)
 
-    def calculate_visual_rage(self, age):
+    def calculate_visual_range(self, age):
         """
         :param age:
         :return: the visual range of the agent based on age
@@ -31,7 +31,7 @@ class CivilianAgent(Agent):
         if age <= 45:
             visual_range = random.randrange(5, 7)  # randomness accounts for individual variation
         else:
-            visual_range = random.randrange(4, 6)
+            visual_range = random.randrange(4, 5)
         return visual_range
 
     def calculate_speed(self, visual_range, weight):
@@ -43,7 +43,7 @@ class CivilianAgent(Agent):
         if weight > 70:
             speed = visual_range - random.randrange(1, 3)   # weight has negative penalty on the speed
         else:
-            speed = visual_range    # else, the speed is the same as the visual range
+            speed = 4    # else, the speed is the maximum speed which is set to 4
         return speed
 
     def print_attributes(self):
@@ -95,23 +95,23 @@ class CivilianAgent(Agent):
         path = path_finding.find_path(self.model.graph, self.pos, self._goal)
         # self._take_shortest_path(possible_steps)
         if path is not None:
-            if len(path) <= self._speed:
-                self.decide_move_action(len(path), path)
-            else:
-                # truncated the path according to the speed of the agent
-                del(path[self._speed+1:])
-                self.decide_move_action(self._speed + 1, path)
+            self.decide_move_action(path)
 
         # TODO: When agents are in a cell in the diagonal of exit, the path tells them to move diagonally,
         #  but they can't bc of exitAgent, however, they don't get remove from model. solution, move this function to
         #  ExitAgent step(), so it can remove e.g. only 1 agent at a time, but from one of the cells in contact with it
 
-    def decide_move_action(self, upper_bound, path):
+    def decide_move_action(self, path):
         """
-        :param upper_bound:
         :param path:
         :return: determines where the agents have to move and if the agent have been saved
         """
+        if len(path) <= self._speed:
+            upper_bound = len(path)
+        else:
+            # truncated the path according to the speed of the agent
+            del (path[self._speed + 1:])
+            upper_bound = self._speed + 1
         for i in range(1, upper_bound):
             # move the agent as long as the there are empty squares
             if self.model.grid.is_cell_empty(path[i]):
