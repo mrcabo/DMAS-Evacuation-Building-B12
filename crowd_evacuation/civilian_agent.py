@@ -20,24 +20,30 @@ class CivilianAgent(Agent):
         self._goal = None
         self._interacted_with = []
         self._exit_point = (None, None)  # a tuple that stores the exit of the agent
-        self._speed = self.calculate_speed(self._age, self._weight)
+        self._visual_range = self.calculate_visual_rage(self._age)
+        self._speed = self.calculate_speed(self._visual_range, self._weight)
 
-    def calculate_speed(self, age, weight):
+    def calculate_visual_rage(self, age):
         """
         :param age:
+        :return: the visual range of the agent based on age
+        """
+        if age <= 45:
+            visual_range = random.randrange(5, 7)  # randomness accounts for individual variation
+        else:
+            visual_range = random.randrange(4, 6)
+        return visual_range
+
+    def calculate_speed(self, visual_range, weight):
+        """
+        :param visual_range:
         :param weight:
         :return: speed according to age and size. Speed varies between 3 and 7 m/s as per previous studies
         """
-        if age <= 50:
-            if weight <= 70:
-                speed = random.randrange(5, 7)
-            else:
-                speed = random.randrange(3, 5)
+        if weight > 70:
+            speed = visual_range - random.randrange(1, 3)   # weight has negative penalty on the speed
         else:
-            if weight <= 70:
-                speed = random.randrange(4, 6)
-            else:
-                speed = random.randrange(3, 4)
+            speed = visual_range    # else, the speed is the same as the visual range
         return speed
 
     def print_attributes(self):
@@ -208,7 +214,7 @@ class CivilianAgent(Agent):
         :return: surrounding agents, possible moving positions and obstacles
         """
         # the list of objects surrounding an agent, 5x5 range, exclude the center where the agent is standing
-        surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=self._speed+2)
+        surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=self._visual_range)
         contacting_objects = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
         possible_moving_range = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False, radius=1)
 

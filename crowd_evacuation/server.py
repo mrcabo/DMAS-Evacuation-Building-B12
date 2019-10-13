@@ -30,7 +30,7 @@ def agent_portrayal(agent):
 
     if type(agent) is CivilianAgent:
         portrayal["Shape"] = "circle"
-        if agent._age <= 50:
+        if agent._age <= 45:
             portrayal["Color"] = "CornflowerBlue"
         else:
             portrayal["Color"] = "DarkBlue"
