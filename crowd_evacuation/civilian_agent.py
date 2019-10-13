@@ -121,8 +121,13 @@ class CivilianAgent(Agent):
         else:
             # When agent doesn't have any known exit or their possible route is blocked by fire,
             # they will take one of possible_steps
-            if possible_steps:
-                self.model.grid.move_agent(self, random.choice(possible_steps))
+            # if possible_steps:
+            #   self.model.grid.move_agent(self, random.choice(possible_steps))
+            if any(isinstance(agent, FireAgent) for agent in surrounding_agents):
+                closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
+                self._move_away_from_fire(closest_fire)
+                return
+
 
     def decide_move_action(self, path):
         """
@@ -286,7 +291,7 @@ class CivilianAgent(Agent):
         # And move 1 cell towards that direction
         new_pos = norm_dir + (my_x, my_y)
         new_pos = np.round(new_pos).astype(int)
-        # self.model.grid.move_agent(self, new_pos)
-        # TODO: TBD - still not clear how to do it
-        if self.model.grid.is_cell_empty(new_pos.tolist()):
-            self.model.grid.move_agent(self, new_pos.tolist())
+        new_pos = (new_pos[0], new_pos[1]) # cast array to tuple
+
+        if self.model.grid.is_cell_empty(new_pos):
+            self.model.grid.move_agent(self, new_pos)

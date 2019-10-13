@@ -49,7 +49,7 @@ class EvacuationModel(Model):
         self.graph = path_finding.create_graph(self)
 
         # Create fire DEBUG
-        fire_initial_pos = [(25, 25)]
+        fire_initial_pos = [(25, 25), (40, 15)]
         for pos in fire_initial_pos:
             fire_agent = FireAgent(pos, self)
             self.schedule.add(fire_agent)

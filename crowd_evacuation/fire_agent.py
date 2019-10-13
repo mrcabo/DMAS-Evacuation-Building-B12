@@ -16,7 +16,7 @@ class FireAgent(Agent):
         super().__init__(pos, model)
         self.pos = pos
         self.condition = "On Fire"
-        self.burned_delay = 5  # How many iter. steps will a fire agent wait until infecting neighboring squares
+        self.burned_delay = 1  # How many iter. steps will a fire agent wait until infecting neighboring squares
         self.delay_counter = 0
 
     def step(self):
