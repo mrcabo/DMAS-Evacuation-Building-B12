@@ -1,6 +1,6 @@
 from mesa.visualization.ModularVisualization import ModularServer
 from .model import EvacuationModel
-from mesa.visualization.modules import CanvasGrid,TextElement, ChartModule, PieChartModule
+from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
 from crowd_evacuation.exit_agent import ExitAgent
@@ -77,9 +77,6 @@ def agent_portrayal(agent):
 line_chart = ChartModule([{"Label": "Agents alive", "Color": "gray"},
                           {"Label": "Agents killed", "Color": "red"},
                           {"Label": "Agents saved", "Color": "green"}])
-pie_chart = PieChartModule([{"Label": "Agents alive", "Color": "gray"},
-                            {"Label": "Agents killed", "Color": "red"},
-                            {"Label": "Agents saved", "Color": "green"}])
 
 introduction = IntroductionText()
 grid = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
@@ -96,7 +93,7 @@ model_params = {
 
 
 server = ModularServer(EvacuationModel,
-                       [introduction, grid, legend, line_chart, pie_chart],
+                       [introduction, grid, legend, line_chart],
                        "Evacuation model",
                        model_params)
 server.port = 8521
