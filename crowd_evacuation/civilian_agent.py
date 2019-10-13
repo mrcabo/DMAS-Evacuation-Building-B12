@@ -45,7 +45,7 @@ class CivilianAgent(Agent):
         print()
 
     def step(self):
-        self.print_attributes()
+        # self.print_attributes()
 
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
