@@ -45,17 +45,19 @@ class CivilianAgent(Agent):
         print()
 
     def step(self):
-        self.print_attributes()
+        # self.print_attributes()
 
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
 
-        # As perceptional memory of Civil_agent, they will remember the location of observed fire
         for surrounding_agent in surrounding_agents:
+            # As perceptional memory of Civil_agent, they will remember the location of observed fire
             if isinstance(surrounding_agent, FireAgent):
                 self.observed_fire.add(surrounding_agent.pos)
+            # Also, if there is exit in agent's vision range, go there
             elif isinstance(surrounding_agent, ExitAgent):
                 self._goal = surrounding_agent.pos
+
         # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
         # if any(isinstance(x, FireAgent) for x in surrounding_agents):
         #     closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
