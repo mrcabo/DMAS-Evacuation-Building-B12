@@ -134,14 +134,6 @@ class CivilianAgent(Agent):
         :param path:
         :return: determines where the agents have to move and if the agent have been saved
         """
-        # for coords in path[1:self._speed+1]:
-        #     if self.model.grid.is_cell_empty(coords):  # move the agent as long as the there are empty squares
-        #         self.model.grid.move_agent(self, coords)
-        #     elif coords == self._goal:  # if the cell is not empty check if it is the goal
-        #         self._exit_point = coords
-        #         self.model.remove_agent(self, Reasons.SAVED)
-        #     else:  # else break the loop and wait next turn
-        #         break
         if len(path) <= self._speed:
             upper_bound = len(path)
         else:
