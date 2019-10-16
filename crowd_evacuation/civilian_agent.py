@@ -277,6 +277,6 @@ class CivilianAgent(Agent):
         new_pos = norm_dir + (my_x, my_y)
         new_pos = np.round(new_pos).astype(int)
         # self.model.grid.move_agent(self, new_pos)
-        # TODO: TBD - still not clear how to do it
+        # TODO: Sohyungs approach looks good. Perfection it
         if self.model.grid.is_cell_empty(new_pos.tolist()):
             self.model.grid.move_agent(self, new_pos.tolist())
