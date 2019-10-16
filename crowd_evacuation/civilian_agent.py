@@ -92,7 +92,8 @@ class CivilianAgent(Agent):
 
         # Else if there is any other civilian in the objects surrounding the agent, find the closest civilian
         # that did not interact with the agent yet and make them interact to exchange information.
-        # TODO: how big is the possible range for the interaction function? Should be smaller(<=) than vision range?
+        # TODO: like steward (talk with everybody around)
+        # TODO: if goal is None, ONLY talk, otherwise agents can talk and move in the same step
         if any(isinstance(x, CivilianAgent) for x in surrounding_agents):
             closest_new_civilian = self._find_closest_new_civilian(surrounding_agents)
             if closest_new_civilian is not None:

@@ -26,8 +26,6 @@ class EvacuationModel(Model):
         self.warning_UI = ""
         # self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
         self.agents_alive = N + K  # Agents alive and inside the building
-        # TODO: maybe have an agents_saved array so we know through which exits these agents were saved?
-        # TODO: dictionary with the pos: people saved through that exit
         self.agents_saved = 0  # Agents that managed to get out
         self.agents_killed = 0  # Agents that perished during the evacuation
         self.grid = SingleGrid(height, width, False)
@@ -140,6 +138,7 @@ class EvacuationModel(Model):
             self.agents_killed += 1
 
         self.agents_alive -= 1
+        # TODO: Add a saved agents list. We will save everything and then we analyze what we want.
         self.schedule.remove(agent)
         self.grid.remove_agent(agent)
 

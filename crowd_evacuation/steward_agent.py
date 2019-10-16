@@ -40,6 +40,6 @@ class StewardAgent(CivilianAgent):
         if path is not None:
             if self.model.grid.is_cell_empty(path[1]):
                 self.model.grid.move_agent(self, path[1])
-        # TODO: We should add the exitpoint as an attribute value before calling remove_agent
+        # TODO: Save the exit point to the self._exitpoint..
         if self._reached_exit():
             self.model.remove_agent(self, Reasons.SAVED)
