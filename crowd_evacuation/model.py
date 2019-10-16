@@ -18,9 +18,10 @@ class EvacuationModel(Model):
     """A model of the evacuation of a building
     """
 
-    def __init__(self, N=10, K=0, width=50, height=50, fire_x=1, fire_y=1):
+    def __init__(self, N=10, K=0, width=50, height=50, fire_x=1, fire_y=1, civil_info_exchange=True):
         self.num_civilians = N
         self.num_stewards = K
+        self.civil_info_exchange = civil_info_exchange
         self.pos_exits = []  # Position of every exit of the building
         self.fire_initial_pos = (fire_x, fire_y)
         self.warning_UI = ""

@@ -114,6 +114,8 @@ model_params = {
                                     description="Fire starting point (x-coordinate)"),
     "fire_y": UserSettableParameter('slider', "Fire starting point (y-coordinate)", 1, 1, 48, 1,
                                     description="Fire starting point (y-coordinate)"),
+    "civil_info_exchange": UserSettableParameter('checkbox', 'Information exchange between civilians', value=True,
+                                           description="Choose whether civilians will exchange information with each other"),
     "Legend": UserSettableParameter('static_text', value=model_legend),
 
     "width": 50,
