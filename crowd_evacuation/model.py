@@ -40,8 +40,7 @@ class EvacuationModel(Model):
         self.graph = None  # General graph representing walkable terrain
         self.schedule = RandomActivation(self)  # Every tick, agents move in a different random order
         self.datacollector = DataCollector(
-            model_reporters={"Agents alive": "agents_alive",
-                             "Agents killed": lambda killed: len(self.agents_killed),
+            model_reporters={"Agents killed": lambda killed: len(self.agents_killed),
                              "Agents saved": lambda saved: len(self.agents_saved)}
         )
 
@@ -251,7 +250,3 @@ class EvacuationModel(Model):
             if (agent_type == CivilianAgent) or (agent_type == StewardAgent):
                 count += 1
         return count
-
-    # overrides original method. it now accept all cross-origin traffic and the tornado warning is not displayed
-    def check_origin(self):
-        return True
