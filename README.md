@@ -1,5 +1,5 @@
 # MultiAgentSystems
-Brief description <- **Insert here :)**
+This project is done as part of the Design of Multi-Agent System course at the University of Groningen. The problem of crowd evacuation from a given building is addressed by taking several variables into account: the knowledge of the emergency exits, the age and weight of the agents and the presence of stewards that can guide agents toward the emergency exits. Agents have different strategies to escape the building such as taking the shortest path to an exit or a random one. Our goal is to study which combinations of agent types are more likely to escape the building and save themselves and how the amount of casualties varies with respect to the different variables.
 
 ## How to run it
 
