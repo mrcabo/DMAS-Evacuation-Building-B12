@@ -237,10 +237,15 @@ class CivilianAgent(Agent):
 
     # _interact: Interacts with neighboring agents to exchange information.
     def _interact(self, other):
-        if isinstance(other, CivilianAgent):
-            shared_known_exits = list(set(self._known_exits + other._known_exits))
-            self._known_exits = shared_known_exits
-            other._known_exits = shared_known_exits
+        # if isinstance(other, CivilianAgent):  # Redundant
+        # Exchange of information about known exits
+        shared_known_exits = list(set(self._known_exits + other._known_exits))
+        self._known_exits = shared_known_exits
+        other._known_exits = shared_known_exits
+        # Exchange of information about known fire hazards
+        shared_fire_hazards = self._observed_fire.union(other._observed_fire)
+        self._observed_fire = shared_fire_hazards
+        other._observed_fire = shared_fire_hazards
 
     def _looking_around(self):
         """
