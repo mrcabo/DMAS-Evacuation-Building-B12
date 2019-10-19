@@ -15,7 +15,14 @@ from crowd_evacuation import path_finding
 
 
 class EvacuationModel(Model):
-    """A model of the evacuation of a building
+    """
+    This is a simulation of a crowd evacuation from a building.
+    Several variables are taken into account: the knowledge of the emergency exits, the age and weight of the agents
+    and the presence of stewards that can guide agents toward the emergency exits.
+    Agents have different strategies to escape the building such as taking the shortest path to an exit or a random one.
+
+    The goal is to study which combinations of agent types are more likely to escape the building and save themselves and
+    how the amount of casualties varies with respect to the different variables.
     """
 
     def __init__(self, N=10, K=0, width=50, height=50, fire_x=1, fire_y=1):
@@ -26,15 +33,15 @@ class EvacuationModel(Model):
         self.warning_UI = ""
         # self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
         self.agents_alive = N + K  # Agents alive and inside the building
-        self.agents_saved = 0  # Agents that managed to get out
-        self.agents_killed = 0  # Agents that perished during the evacuation
+        # TODO: dictionary with the pos: people saved through that exit
+        self.agents_saved = []  # Agents that managed to get out
+        self.agents_killed = []  # Agents that perished during the evacuation
         self.grid = SingleGrid(height, width, False)
         self.graph = None  # General graph representing walkable terrain
         self.schedule = RandomActivation(self)  # Every tick, agents move in a different random order
         self.datacollector = DataCollector(
-            model_reporters={"Agents alive": "agents_alive",
-                             "Agents killed": "agents_killed",
-                             "Agents saved": "agents_saved"}
+            model_reporters={"Agents killed": lambda killed: len(self.agents_killed),
+                             "Agents saved": lambda saved: len(self.agents_saved)}
         )
 
         # Create exits
@@ -133,9 +140,11 @@ class EvacuationModel(Model):
             None
         """
         if reason == Reasons.SAVED:
-            self.agents_saved += 1
+            self.agents_saved.append(agent)
+           # self.agents_saved += 1
         elif reason == Reasons.KILLED_BY_FIRE:
-            self.agents_killed += 1
+            self.agents_killed.append(agent)
+            #self.agents_killed += 1
 
         self.agents_alive -= 1
         # TODO: Add a saved agents list. We will save everything and then we analyze what we want.

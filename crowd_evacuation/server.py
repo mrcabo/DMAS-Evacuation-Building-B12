@@ -1,6 +1,7 @@
 from mesa.visualization.ModularVisualization import ModularServer
 from .model import EvacuationModel
-from mesa.visualization.modules import CanvasGrid, ChartModule
+from mesa.visualization.modules import CanvasGrid
+from crowd_evacuation.ChartVisualization import ChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 from mesa.visualization.modules import TextElement
 
@@ -83,8 +84,7 @@ def agent_portrayal(agent):
     return portrayal
 
 
-line_chart = ChartModule([{"Label": "Agents alive", "Color": "gray"},
-                          {"Label": "Agents killed", "Color": "red"},
+line_chart = ChartModule([{"Label": "Agents killed", "Color": "red"},
                           {"Label": "Agents saved", "Color": "green"}])
 
 introduction = IntroductionText()
