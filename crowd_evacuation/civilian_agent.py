@@ -9,7 +9,7 @@ from crowd_evacuation.exit_agent import ExitAgent
 from crowd_evacuation.fire_agent import FireAgent
 from crowd_evacuation.reasons import Reasons
 from crowd_evacuation.wall_agent import WallAgent
-
+from crowd_evacuation.steward_agent import StewardAgent
 
 class CivilianAgent(Agent):
 
@@ -28,7 +28,7 @@ class CivilianAgent(Agent):
         self._visual_range = self.calculate_visual_range(self._age)
         self._speed = self.calculate_speed(self._visual_range, self._weight)
         self._observed_fire = set()
-        self._observed_wall = set()
+        # self._observed_wall = set()
         self._being_risky = random.randrange(0, 2)
         self._info_exchange = self.model.civil_info_exchange
         self.last_pos = None
@@ -73,7 +73,6 @@ class CivilianAgent(Agent):
 
     def step(self):
         current_pos = copy(self.pos)
-        # self.print_attributes()
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
 
@@ -86,37 +85,24 @@ class CivilianAgent(Agent):
                                                                           include_center=True,
                                                                           radius=self._being_risky))
                 self._observed_fire = self._observed_fire.union(extended_fire_area)
-            elif isinstance(surrounding_agent, WallAgent):
-                self._observed_wall.add(surrounding_agent)
-            # Also, if there is exit in agent's vision range, go there
+            # Also, if there is exit in agent's vision range, add it to known exits
             elif isinstance(surrounding_agent, ExitAgent):
                 self._known_exits.append(surrounding_agent.pos)
 
-        # Else if civilians should exchange information and there is any other civilian in the objects surrounding
-        # the agent, find the closest civilian that did not interact with the agent yet and make them interact to
-        # exchange information.
-        if self._info_exchange:
-            for x in surrounding_agents:
-                if isinstance(x, CivilianAgent):
-                    self._interact(x)
-                    self._determine_closest_exit()
+            # Else if civilians should exchange information and there is any other civilian in the objects surrounding
+            # the agent, communicate and exchange information.
+            if self._info_exchange and isinstance(surrounding_agent, CivilianAgent):
+                self._interact(surrounding_agent)
 
-        # Else if there is no immediate danger for the agent, move the agent towards the closest exit. Remove
-        # the agent from the schedule and the grid if the agent has exited the building.
-        if self._goal is None:
-            self._determine_closest_exit()
-
+        self._determine_goal()
+        # Set as non_walkable the nodes in the graph that contain other people or fire hazards.
         non_walkable = set()
         for neighbour in contacting_objects:
-            if isinstance(neighbour, CivilianAgent):
+            if isinstance(neighbour, (CivilianAgent, StewardAgent)):
                 non_walkable.add(neighbour.pos)
-        # Here, agent's non-walkable range from fire also added.
-        # because when we create the graph, WallAgent is subtracted on the graph.
-        # So, when add non-walkable area, consider it is available grid of the graph.
         non_walkable = non_walkable.union(self._observed_fire).intersection(set(self.model.graph.nodes.keys()))
-
+        # Calculates the shortest possible path to the agent's goal.
         best_path = path_finding.find_path(self.model.graph, self.pos, self._goal, non_walkable=non_walkable)
-        # self._take_shortest_path(possible_steps)
         if best_path is not None and self.model.grid.is_cell_empty(best_path[1]):
             self.decide_move_action(best_path)
 
@@ -180,8 +166,16 @@ class CivilianAgent(Agent):
         """
         return abs(x[0] - y[0]) + abs(x[1] - y[1])
 
-    # _determine_closest_exit: Determines the closest known exit, based on the absolute distance.
-    def _determine_closest_exit(self):
+    def _determine_goal(self):
+        """
+        Determines the goal for the agent, so where he should be headed to. For now it is just the closest exit,
+        but it could be a more complex function that includes human psychology (maybe you go towards a known exit,
+        instead of a closer one..)
+
+        Returns:
+            (tuple): The coordinates where this agent is heading to.
+
+        """
         distances = [self._absolute_distance(self.pos, x) for x in self._known_exits]
         self._goal = self._known_exits[distances.index(min(distances))]
 
@@ -315,7 +309,7 @@ class CivilianAgent(Agent):
         # And move 1 cell towards that direction TODO : now we are using different speed..
         new_pos = norm_dir + (my_x, my_y)
         new_pos = np.round(new_pos).astype(int)
-        new_pos = (new_pos[0], new_pos[1]) # cast array to tuple
+        new_pos = (new_pos[0], new_pos[1])  # cast array to tuple
         print(new_pos)
         # self.model.grid.get_neighbors(new_pos, moore=True, include_center=True, radius=0)
         if self.model.grid.is_cell_empty(new_pos):
