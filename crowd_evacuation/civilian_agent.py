@@ -9,7 +9,7 @@ from crowd_evacuation.exit_agent import ExitAgent
 from crowd_evacuation.fire_agent import FireAgent
 from crowd_evacuation.reasons import Reasons
 from crowd_evacuation.wall_agent import WallAgent
-from crowd_evacuation.steward_agent import StewardAgent
+
 
 class CivilianAgent(Agent):
 
@@ -98,7 +98,7 @@ class CivilianAgent(Agent):
         # Set as non_walkable the nodes in the graph that contain other people or fire hazards.
         non_walkable = set()
         for neighbour in contacting_objects:
-            if isinstance(neighbour, (CivilianAgent, StewardAgent)):
+            if isinstance(neighbour, CivilianAgent):
                 non_walkable.add(neighbour.pos)
         non_walkable = non_walkable.union(self._observed_fire).intersection(set(self.model.graph.nodes.keys()))
         # Calculates the shortest possible path to the agent's goal.
@@ -299,7 +299,6 @@ class CivilianAgent(Agent):
         return surrounding_agents, possible_steps, contacting_objects
 
     def _move_away_from_fire(self, fire):
-        print(fire)
         # move towards the opposite direction of the fire
         my_x, my_y = self.pos
         opposite_direction = np.asarray([(my_x - fire.pos[0]), (my_y - fire.pos[1])])  # direction of escape
@@ -310,10 +309,8 @@ class CivilianAgent(Agent):
         new_pos = norm_dir + (my_x, my_y)
         new_pos = np.round(new_pos).astype(int)
         new_pos = (new_pos[0], new_pos[1])  # cast array to tuple
-        print(new_pos)
         # self.model.grid.get_neighbors(new_pos, moore=True, include_center=True, radius=0)
         if self.model.grid.is_cell_empty(new_pos):
-            print("run away from fire")
             self.model.grid.move_agent(self, new_pos)
 
     def _calculate_distance_to_closest_agent(self, point, agents):
