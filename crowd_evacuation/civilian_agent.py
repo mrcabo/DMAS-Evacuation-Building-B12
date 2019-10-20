@@ -1,10 +1,14 @@
-from mesa import Agent
-from crowd_evacuation.reasons import Reasons
 import random
+from copy import copy
+
 import numpy as np
+from mesa import Agent
+
 from crowd_evacuation import path_finding
-from crowd_evacuation.fire_agent import FireAgent
 from crowd_evacuation.exit_agent import ExitAgent
+from crowd_evacuation.fire_agent import FireAgent
+from crowd_evacuation.reasons import Reasons
+from crowd_evacuation.wall_agent import WallAgent
 
 
 class CivilianAgent(Agent):
@@ -24,7 +28,9 @@ class CivilianAgent(Agent):
         self._visual_range = self.calculate_visual_range(self._age)
         self._speed = self.calculate_speed(self._visual_range, self._weight)
         self._observed_fire = set()
+        self._observed_wall = set()
         self._being_risky = random.randrange(0, 2)
+        self.last_pos = None
 
     def calculate_visual_range(self, age):
         """
@@ -65,13 +71,13 @@ class CivilianAgent(Agent):
         print()
 
     def step(self):
+        current_pos = copy(self.pos)
         # self.print_attributes()
-
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
 
         for surrounding_agent in surrounding_agents:
-            # As perceptional memory of Civil_agent, they will remember the location of observed fire.
+            # As perceptual memory of Civil_agent, they will remember the location of observed fire.
             # Note, depending on the agent's level of being risky,
             # his walkable distance/range from fire during moving is decided.
             if isinstance(surrounding_agent, FireAgent):
@@ -79,39 +85,30 @@ class CivilianAgent(Agent):
                                                                           include_center=True,
                                                                           radius=self._being_risky))
                 self._observed_fire = self._observed_fire.union(extended_fire_area)
+            elif isinstance(surrounding_agent, WallAgent):
+                self._observed_wall.add(surrounding_agent)
             # Also, if there is exit in agent's vision range, go there
             elif isinstance(surrounding_agent, ExitAgent):
                 self._known_exits.append(surrounding_agent.pos)
-                self._determine_closest_exit()
-
-        # If there is any fire in the objects surrounding the agent, move the agent away from the fire.
-        # if any(isinstance(x, FireAgent) for x in surrounding_agents):
-        #     closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
-        #     self._move_away_from_fire(closest_fire)
-        #     return
-
         # Else if there is any other civilian in the objects surrounding the agent, find the closest civilian
         # that did not interact with the agent yet and make them interact to exchange information.
         # TODO: like steward (talk with everybody around)
         # TODO: if goal is None, ONLY talk, otherwise agents can talk and move in the same step
         if any(isinstance(x, CivilianAgent) for x in surrounding_agents):
-            closest_new_civilian = self._find_closest_new_civilian(surrounding_agents)
-            if closest_new_civilian is not None:
-                self._interact(closest_new_civilian)
-                self._interacted_with.append(closest_new_civilian.unique_id)
-                self._determine_closest_exit()
-                return
+           closest_new_civilian = self._find_closest_new_civilian(surrounding_agents)
+           if closest_new_civilian is not None:
+               self._interact(closest_new_civilian)
+               self._interacted_with.append(closest_new_civilian.unique_id)
+               self._determine_closest_exit()
 
         # Else if there is no immediate danger for the agent, move the agent towards the closest exit. Remove
         # the agent from the schedule and the grid if the agent has exited the building.
-        if self._goal is None:
-            self._determine_closest_exit()
-
+        self._determine_closest_exit()
+        # start to compute path
         non_walkable = set()
         for neighbour in contacting_objects:
             if isinstance(neighbour, CivilianAgent):
                 non_walkable.add(neighbour.pos)
-
         # Here, agent's non-walkable range from fire also added.
         # because when we create the graph, WallAgent is subtracted on the graph.
         # So, when add non-walkable area, consider it is available grid of the graph.
@@ -121,6 +118,35 @@ class CivilianAgent(Agent):
         # self._take_shortest_path(possible_steps)
         if best_path is not None and self.model.grid.is_cell_empty(best_path[1]):
             self.decide_move_action(best_path)
+
+        elif possible_steps and any(isinstance(agent, WallAgent) for agent in surrounding_agents):
+            # find the closest wall to walk along
+            surrounding_walls = list(filter(lambda a: isinstance(a, WallAgent), surrounding_agents))
+            closest_wall = self._find_closest_agent(surrounding_walls)
+            distance_from_wall = self._absolute_distance(self.pos, closest_wall.pos)
+
+            next_possible_steps = []
+            for step in possible_steps:
+                shortest_dis_to_wall, _ = self._calculate_distance_to_closest_agent(step, surrounding_walls)
+                if shortest_dis_to_wall <= distance_from_wall and step != self.last_pos:
+                    next_possible_steps.append(step)
+            # Now, pick one position to move
+            # If they saw fire before they try to move far away from the fire
+            if self._observed_fire and next_possible_steps:
+                closest_fire = self._find_closest_point(self._observed_fire)
+                distance_from_fire = self._absolute_distance(self.pos, closest_fire)
+                for coords in next_possible_steps:
+                    if distance_from_fire <= self._absolute_distance(coords, closest_fire):
+                        self.model.grid.move_agent(self, coords)
+                        break
+            else:
+                self.model.grid.move_agent(self, random.choice(possible_steps))
+
+        # When agent see wall, they try to walk along the wall
+        elif any(isinstance(agent, FireAgent) for agent in surrounding_agents):
+            closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
+            self._move_away_from_fire(closest_fire)
+        self.last_pos = current_pos
 
     def decide_move_action(self, path):
         """
@@ -208,6 +234,20 @@ class CivilianAgent(Agent):
                 closest_agent = agent
         return closest_agent
 
+    def _find_closest_point(self, points):
+        """
+        :param  points
+        :return: the closest agent to the agent
+        """
+        min_distance = 10000
+        closest_agent = None
+        for point in points:
+            distance_to_agent = self._absolute_distance(self.pos, point)
+            if distance_to_agent < min_distance:
+                min_distance = distance_to_agent
+                closest_agent = point
+        return closest_agent
+
     def _find_exit(self, surrounding_agents):
         """
         :param  surrounding agents
@@ -256,32 +296,40 @@ class CivilianAgent(Agent):
                                                            radius=self._visual_range)
         contacting_objects = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False)
         possible_moving_range = self.model.grid.get_neighborhood(self.pos, moore=True, include_center=False, radius=1)
-
         # also checking where this poor agent can move to survive
-        possible_moving_position = []
+        possible_steps = []
         for position in possible_moving_range:
             if self.model.grid.is_cell_empty(position):
-                possible_moving_position.append(position)
-
-        return surrounding_agents, possible_moving_position, contacting_objects
-
-    def _egress_movement(self, possible_moving_range):
-        # an agent can move one grid at a tick / time step
-        # -> it means 3 x 3 range should be checked to find empty place to move
-
-        return
+                possible_steps.append(position)
+        return surrounding_agents, possible_steps, contacting_objects
 
     def _move_away_from_fire(self, fire):
+        print(fire)
         # move towards the opposite direction of the fire
         my_x, my_y = self.pos
         opposite_direction = np.asarray([(my_x - fire.pos[0]), (my_y - fire.pos[1])])  # direction of escape
         # We normalize and find the unit vector of opposite_direction
         norm_dir = np.linalg.norm(opposite_direction)
         norm_dir = np.divide(opposite_direction, norm_dir)
-        # And move 1 cell towards that direction
+        # And move 1 cell towards that direction TODO : now we are using different speed..
         new_pos = norm_dir + (my_x, my_y)
         new_pos = np.round(new_pos).astype(int)
-        # self.model.grid.move_agent(self, new_pos)
-        # TODO: Sohyungs approach looks good. Perfection it
-        if self.model.grid.is_cell_empty(new_pos.tolist()):
-            self.model.grid.move_agent(self, new_pos.tolist())
+        new_pos = (new_pos[0], new_pos[1]) # cast array to tuple
+        print(new_pos)
+        # self.model.grid.get_neighbors(new_pos, moore=True, include_center=True, radius=0)
+        if self.model.grid.is_cell_empty(new_pos):
+            print("run away from fire")
+            self.model.grid.move_agent(self, new_pos)
+
+    def _calculate_distance_to_closest_agent(self, point, agents):
+        distance_agent_pairs = [(self._absolute_distance(point, agent.pos), agent) for agent in agents]
+        distance_agent_pairs = sorted(distance_agent_pairs, key=lambda p: p[0])
+        return distance_agent_pairs[0]
+        # Call it like this: distance, agent = self._calculate_distance_to_closest_agent(point, agents)
+
+    def _compare_distances(self, closest_wall, possible_steps):
+        distance_from_wall = self._absolute_distance(self.pos, closest_wall)
+        distance_agent_pairs = [(self._absolute_distance(step, closest_wall), step) for step in possible_steps]
+        distance_agent_pairs = sorted(distance_agent_pairs, key=lambda p: p[0])
+        if distance_from_wall >= distance_agent_pairs[0]:
+            return

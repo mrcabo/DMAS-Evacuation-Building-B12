@@ -14,4 +14,5 @@ class ExitAgent(Agent):
 
         for agent in self.model.grid.get_neighbors(self.pos, moore=True, include_center=False):
             if isinstance(agent, CivilianAgent):
+                agent._exit_point = self.pos
                 self.model.remove_agent(agent, Reasons.SAVED)
