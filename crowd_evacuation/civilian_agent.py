@@ -30,6 +30,7 @@ class CivilianAgent(Agent):
         self._observed_fire = set()
         self._observed_wall = set()
         self._being_risky = random.randrange(0, 2)
+        self._info_exchange = self.model.civil_info_exchange
         self.last_pos = None
 
     def calculate_visual_range(self, age):
@@ -90,21 +91,21 @@ class CivilianAgent(Agent):
             # Also, if there is exit in agent's vision range, go there
             elif isinstance(surrounding_agent, ExitAgent):
                 self._known_exits.append(surrounding_agent.pos)
-        # Else if there is any other civilian in the objects surrounding the agent, find the closest civilian
-        # that did not interact with the agent yet and make them interact to exchange information.
-        # TODO: like steward (talk with everybody around)
-        # TODO: if goal is None, ONLY talk, otherwise agents can talk and move in the same step
-        if any(isinstance(x, CivilianAgent) for x in surrounding_agents):
-           closest_new_civilian = self._find_closest_new_civilian(surrounding_agents)
-           if closest_new_civilian is not None:
-               self._interact(closest_new_civilian)
-               self._interacted_with.append(closest_new_civilian.unique_id)
-               self._determine_closest_exit()
+
+        # Else if civilians should exchange information and there is any other civilian in the objects surrounding
+        # the agent, find the closest civilian that did not interact with the agent yet and make them interact to
+        # exchange information.
+        if self._info_exchange:
+            for x in surrounding_agents:
+                if isinstance(x, CivilianAgent):
+                    self._interact(x)
+                    self._determine_closest_exit()
 
         # Else if there is no immediate danger for the agent, move the agent towards the closest exit. Remove
         # the agent from the schedule and the grid if the agent has exited the building.
-        self._determine_closest_exit()
-        # start to compute path
+        if self._goal is None:
+            self._determine_closest_exit()
+
         non_walkable = set()
         for neighbour in contacting_objects:
             if isinstance(neighbour, CivilianAgent):
