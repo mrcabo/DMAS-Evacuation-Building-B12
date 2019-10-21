@@ -1,3 +1,5 @@
+from functools import partial
+
 import numpy as np
 
 from mesa import Model
@@ -12,6 +14,11 @@ from crowd_evacuation.steward_agent import StewardAgent
 from crowd_evacuation.civilian_agent import CivilianAgent
 from crowd_evacuation.reasons import Reasons
 from crowd_evacuation import path_finding
+
+
+def count_agents_saved(exit_pos, model):
+    exit_list = [agent._exit_point for agent in model.agents_saved]
+    return exit_list.count(exit_pos)
 
 
 class EvacuationModel(Model):
@@ -29,7 +36,6 @@ class EvacuationModel(Model):
         self.num_civilians = N
         self.num_stewards = K
         self.civil_info_exchange = civil_info_exchange
-        self.pos_exits = []  # Position of every exit of the building
         self.fire_initial_pos = (fire_x, fire_y)
         self.warning_UI = ""
         # self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
@@ -40,22 +46,22 @@ class EvacuationModel(Model):
         self.grid = SingleGrid(height, width, False)
         self.graph = None  # General graph representing walkable terrain
         self.schedule = RandomActivation(self)  # Every tick, agents move in a different random order
-        self.datacollector = DataCollector(
-            model_reporters={"Agents killed": lambda killed: len(self.agents_killed),
-                             "Agents saved": lambda saved: len(self.agents_saved)}
-        )
-
         # Create exits
-
-        exits_BB = [(0, 5),
-                    (0, 25),
-                    (0, 45)]
+        self.pos_exits = [(0, 5), (0, 25), (0, 45)]
         for i in range(3):
-            exits_BB.append((self.grid.width - 1, 14 + i))
+            self.pos_exits.append((self.grid.width - 1, 14 + i))
 
-        self.draw_environment(exits_BB)
+        self.draw_environment(self.pos_exits)
         self.graph = path_finding.create_graph(self)
-
+        # Define data collector
+        model_collector = {"Agents killed": lambda killed: len(self.agents_killed),
+                           "Agents saved": lambda saved: len(self.agents_saved)}
+        for exit_pos in self.pos_exits:
+            title = "Exit {}".format(exit_pos)
+            model_collector[title] = partial(count_agents_saved, exit_pos)
+        self.datacollector = DataCollector(
+            model_reporters=model_collector
+        )
         # Create fire
         # for pos in self.fire_initial_pos:  # Only 1 source of fire since we are setting it from UI
         x, y = self.fire_initial_pos
@@ -70,12 +76,12 @@ class EvacuationModel(Model):
         self.schedule.add(fire_agent)
         self.grid.place_agent(fire_agent, pos)
         # Create civilian agents
-        # middle_of_known_exits = exits_BB[2::5]
+        # middle_of_known_exits = self.pos_exits[2::5]
         for i in range(self.num_civilians):
 
             # a civilian agent will know at least one exit from the pos_exits
             # known_exits = random.sample(middle_of_known_exits, randint(1, len(middle_of_known_exits)))
-            known_exits = exits_BB[-3:]
+            known_exits = self.pos_exits[-3:]
             a = CivilianAgent(i, self, known_exits)
 
             self.schedule.add(a)
@@ -93,11 +99,11 @@ class EvacuationModel(Model):
             self.grid.place_agent(a, (x, y))
 
         # Create steward agents
-        # middle_of_known_exits = exits_BB[2::5]
+        # middle_of_known_exits = self.pos_exits[2::5]
         for i in range(self.num_civilians, self.num_civilians + self.num_stewards):
 
             # a steward agent will know all exits.
-            known_exits = exits_BB
+            known_exits = self.pos_exits
             a = StewardAgent(i, self, known_exits)
 
             self.schedule.add(a)
@@ -142,10 +148,10 @@ class EvacuationModel(Model):
         """
         if reason == Reasons.SAVED:
             self.agents_saved.append(agent)
-           # self.agents_saved += 1
+            # self.agents_saved += 1
         elif reason == Reasons.KILLED_BY_FIRE:
             self.agents_killed.append(agent)
-            #self.agents_killed += 1
+            # self.agents_killed += 1
 
         self.agents_alive -= 1
         # TODO: Add a saved agents list. We will save everything and then we analyze what we want.
