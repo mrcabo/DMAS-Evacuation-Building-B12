@@ -3,18 +3,30 @@ This project is done as part of the Design of Multi-Agent System course at the U
 
 ## How to run it
 
+This project was designed as a python package, so it could be uploaded to a python package repository in the future,
+such as PyPi for example. All the import paths that are used in the code are declared with this in mind, which is 
+why we need to indicate the python interpreter where to find our python package. That is done with the PYTHONPATH 
+environment variable.
+
+A simple example on how to run this code
 ```bash
 #!/bin/bash
-cd <path_to_base_dir>
+cd /home/<username>/Downloads
+git clone https://github.com/mrcabo/DMAS-Evacuation-Building-B12.git
+cd DMAS-Evacuation-Building-B12
 python3 -m venv venv
 source venv/bin/activate
-export PYTHONPATH="$PYTHONPATH:<path_to_base_dir>"
+export PYTHONPATH="$PYTHONPATH:/home/<username>/Downloads/DMAS-Evacuation-Building-B12"
 cd crowd_evacuation
 pip install -r requirements.txt
 python run.py
 ```
 
-where <path_to_base_dir> is the path to the directory where the repository was downloaded.
+Creating a virtual environment is not necessary but recommended. If you don't have it installed, try:
+
+```bash
+sudo apt update && apt install -y python3-venv
+```
 
 ## Frameworks
 
