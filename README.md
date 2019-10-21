@@ -27,6 +27,14 @@ Creating a virtual environment is not necessary but recommended. If you don't ha
 ```bash
 sudo apt update && apt install -y python3-venv
 ```
+## Files
+
+* ``run.py``: Launches a model visualization server.
+* ``model.py``: Contains the overall model class.
+* ``<agent_name>_agent.py``: Contains the agents classes.
+* ``server.py``: Defines classes for visualizing the model in the browser via Mesa's modular server, and instantiates a visualization server.
+* ``path_finding.py``: Uses a graph that represents the grid, and finds the optimal path between 2 points using 
+A* algorithm.
 
 ## Frameworks
 
@@ -38,6 +46,11 @@ Its goal is to be the Python 3-based alternative to NetLogo, Repast, or MASON
 [Mesa - docs](https://mesa.readthedocs.io/en/master/overview.html)
 
 ## Useful Links and Papers
+
+Papers that inspire this model:
+
+[Almeida, J. E., Rosseti, R. J., & Coelho, A. L. (2013). Crowd simulation modeling applied to emergency and evacuation simulations using multi-agent systems. arXiv preprint arXiv:1303.4692.
+](https://arxiv.org/abs/1303.4692)
 
 [Fire evacuation articles](https://drive.google.com/open?id=1HMzqJxqz3AQLu_tjEEDJ6bSJO-sjNtLn)
 
