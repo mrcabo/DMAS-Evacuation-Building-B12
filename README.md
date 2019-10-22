@@ -3,18 +3,38 @@ This project is done as part of the Design of Multi-Agent System course at the U
 
 ## How to run it
 
+This project was designed as a python package, so it could be uploaded to a python package repository in the future,
+such as PyPi for example. All the import paths that are used in the code are declared with this in mind, which is 
+why we need to indicate the python interpreter where to find our python package. That is done with the PYTHONPATH 
+environment variable.
+
+A simple example on how to run this code
 ```bash
 #!/bin/bash
-cd <path_to_base_dir>
+cd /home/<username>/Downloads
+git clone https://github.com/mrcabo/DMAS-Evacuation-Building-B12.git
+cd DMAS-Evacuation-Building-B12
 python3 -m venv venv
 source venv/bin/activate
-export PYTHONPATH="$PYTHONPATH:<path_to_base_dir>"
+export PYTHONPATH="$PYTHONPATH:/home/<username>/Downloads/DMAS-Evacuation-Building-B12"
 cd crowd_evacuation
 pip install -r requirements.txt
 python run.py
 ```
 
-where <path_to_base_dir> is the path to the directory where the repository was downloaded.
+Creating a virtual environment is not necessary but recommended. If you don't have it installed, try:
+
+```bash
+sudo apt update && apt install -y python3-venv
+```
+## Files
+
+* ``run.py``: Launches a model visualization server.
+* ``model.py``: Contains the overall model class.
+* ``<agent_name>_agent.py``: Contains the agents classes.
+* ``server.py``: Defines classes for visualizing the model in the browser via Mesa's modular server, and instantiates a visualization server.
+* ``path_finding.py``: Uses a graph that represents the grid, and finds the optimal path between 2 points using 
+A* algorithm.
 
 ## Frameworks
 
@@ -26,6 +46,11 @@ Its goal is to be the Python 3-based alternative to NetLogo, Repast, or MASON
 [Mesa - docs](https://mesa.readthedocs.io/en/master/overview.html)
 
 ## Useful Links and Papers
+
+Papers that inspire this model:
+
+[Almeida, J. E., Rosseti, R. J., & Coelho, A. L. (2013). Crowd simulation modeling applied to emergency and evacuation simulations using multi-agent systems. arXiv preprint arXiv:1303.4692.
+](https://arxiv.org/abs/1303.4692)
 
 [Fire evacuation articles](https://drive.google.com/open?id=1HMzqJxqz3AQLu_tjEEDJ6bSJO-sjNtLn)
 
