@@ -66,4 +66,4 @@ if __name__ == '__main__':
     batch_run.run_all()
 
     run_data = batch_run.get_model_vars_dataframe()
-    print("Bye")
+    print(run_data)  # TODO: debug only, delete when its done
