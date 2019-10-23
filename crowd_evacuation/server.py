@@ -1,7 +1,8 @@
 from mesa.visualization.ModularVisualization import ModularServer
 from .model import EvacuationModel
-from mesa.visualization.modules import CanvasGrid, BarChartModule
+from mesa.visualization.modules import CanvasGrid
 from crowd_evacuation.ChartVisualization import ChartModule
+from crowd_evacuation.BarChartVisualization import BarChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 from mesa.visualization.modules import TextElement
 
@@ -122,7 +123,7 @@ exits_barchart = BarChartModule([{"Label": "Exit {}".format(labels[0]), "Color":
 introduction = IntroductionText()
 grid = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 warnings = WarningUI()
-title_statistics = StatisticsTitle("<h2>Statistics</h2><br>")
+title_statistics = StatisticsTitle("<h2 style='margin-top:50px'>Statistics</h2><br>")
 statistics = StatisticsText()
 
 model_legend = '''
@@ -157,7 +158,7 @@ model_params = {
 }
 
 server = ModularServer(EvacuationModel,
-                       [introduction, warnings, grid, line_chart, title_statistics, exits_barchart, statistics],
+                       [introduction, warnings, grid, title_statistics,  line_chart, exits_barchart, statistics],
                        "Evacuation model",
                        model_params)
 server.port = 8521

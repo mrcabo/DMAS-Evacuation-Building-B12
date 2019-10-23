@@ -4,7 +4,7 @@ var ChartModule = function(series, canvas_width, canvas_height) {
     // Create the tag:
     Chart.defaults.global.defaultFontColor='black';
     var canvas_tag = "<canvas width='" + canvas_width + "' height='" + canvas_height + "' ";
-    canvas_tag += "style='border:1px solid; margin-top:50px; margin-bottom:50px'></canvas>";
+    canvas_tag += "style='border:1px solid; margin-top:30px; margin-bottom:50px'></canvas>";
     // Append it to #elements
     var canvas = $(canvas_tag)[0];
     $("#elements").append(canvas);
