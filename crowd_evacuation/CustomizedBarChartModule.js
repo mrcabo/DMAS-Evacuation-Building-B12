@@ -9,29 +9,13 @@ var BarChartModule = function(fields, canvas_width, canvas_height, sorting, sort
 
     // Create the tag:
     var svg_tag = "<svg width='" + canvas_width + "' height='" + canvas_height + "' ";
-    svg_tag += "style='border:1px solid; padding-left:10px'></svg>";
+    svg_tag += "style='border:1px solid; padding-left:10px; margin-bottom:30px'></svg>";
     // Append it to #elements
     var svg_element = $(svg_tag)[0];
     chart_div.append(svg_element);
 
-    //create the legend
-    var legend_tag = "<div class='legend'></div>";
-    var legend_element = $(legend_tag)[0];
-    chart_div.append(legend_element);
+    var categories = ["Exit (0, 5)", "Exit (0, 25)", "Exit (0, 45)", "Exit (49, 14)", "Exit (49, 15)", "Exit (49, 16)"]
 
-    var legend = d3.select(legend_element)
-        .attr("style","display:block;width:"
-            + canvas_width + "px;text-align:center")
-
-    legend.selectAll("span")
-        .data(fields)
-        .enter()
-        .append("span")
-        .html(function(d){
-            return "<span style='color:" + d["Color"] +";'> &#11044;</span>" + "&nbsp;" +
-            d["Label"].replace(" ", "&nbsp;")
-        })
-        .attr("style", "padding-left:10px;padding-right:10px")
 
     // setup the d3 svg selection
     var svg = d3.select(svg_element)
@@ -55,12 +39,22 @@ var BarChartModule = function(fields, canvas_width, canvas_height, sorting, sort
     var axisLeft = g.append("g")
     var titleChart = g.append("text")
     var yAxisLabel = g.append("text")
+    var categoryLabel = chart.append("text")
 
 
     axisBottom
         .attr("class", "axis")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x0));
+        .call(d3.axisBottom(x0))
+
+    var yName = d3.scaleBand()
+        .domain(categories)
+        .range([15, width - 60])
+    g.append("g")
+        .style("font-size", "14px")
+        .attr("transform", "translate(20," + (height+10) + ")")
+        .call(d3.axisBottom(yName).tickSize(0))
+        .select(".domain").remove()
 
     axisLeft
         .attr("class", "axis")
@@ -68,7 +62,7 @@ var BarChartModule = function(fields, canvas_width, canvas_height, sorting, sort
 
     titleChart
         .attr("x", (width / 2))
-        .attr("y", 0 - (margin.top / 2))
+        .attr("y", -5 - (margin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "14px")
         .style("font-family", "Helvetica")
