@@ -1,5 +1,6 @@
 import argparse
 from functools import partial
+from pathlib import Path
 
 from mesa.batchrunner import BatchRunner
 
@@ -8,6 +9,20 @@ from crowd_evacuation.model import EvacuationModel, count_agents_saved
 
 def get_agents_saved(model):
     return len(model.agents_saved)
+
+
+def get_list_saved_agents(model):
+    list_of_agents = []
+    for agent in model.agents_saved:
+        list_of_agents.append(agent.attr_to_list())
+    return list_of_agents
+
+
+def get_list_dead_agents(model):
+    list_of_agents = []
+    for agent in model.agents_killed:
+        list_of_agents.append(agent.attr_to_list())
+    return list_of_agents
 
 
 def parse_arguments():
@@ -60,10 +75,14 @@ if __name__ == '__main__':
         fixed_params,
         iterations=10,  # For now, then could be 100
         max_steps=500,
-        model_reporters={"Agents saved": get_agents_saved}
+        model_reporters={"Agents saved": get_agents_saved,
+                         "List saved agents": get_list_saved_agents,
+                         "List dead agents": get_list_dead_agents}
     )
 
     batch_run.run_all()
-
+    batch_dir = Path.cwd() / "batch_results"
+    if not batch_dir.exists():
+        Path.mkdir(batch_dir)
     run_data = batch_run.get_model_vars_dataframe()
-    print(run_data)  # TODO: debug only, delete when its done
+    run_data.to_csv(path_or_buf=(batch_dir / "my_batch_data.csv"))

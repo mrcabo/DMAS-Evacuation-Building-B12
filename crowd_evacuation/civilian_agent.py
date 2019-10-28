@@ -72,6 +72,9 @@ class CivilianAgent(Agent):
         print()
         print()
 
+    def attr_to_list(self):
+        return self.unique_id, self._age, self._weight, self._visual_range, self._speed, self._being_risky
+
     def step(self):
         self.last_pos = self.pos
         # First, an agent should look around for the surrounding agents & possible moving positions.
@@ -150,7 +153,7 @@ class CivilianAgent(Agent):
                 surrounding_walls = list(filter(lambda a: isinstance(a, WallAgent), surrounding_agents))
                 closest_wall = self._find_closest_agent(surrounding_walls)
                 distance_from_wall = self._absolute_distance(self.pos, closest_wall.pos)
-    
+
                 next_possible_steps = []
                 for step in possible_steps:
                     shortest_dis_to_wall, _ = self._calculate_distance_to_closest_agent(step, surrounding_walls)
@@ -167,7 +170,7 @@ class CivilianAgent(Agent):
                             break
                 else:
                     self.model.grid.move_agent(self, random.choice(possible_steps))
-    
+
             # When agent see wall, they try to walk along the wall
             elif any(isinstance(agent, FireAgent) for agent in surrounding_agents):
                 closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
