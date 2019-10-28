@@ -1,6 +1,4 @@
 import random
-from copy import copy
-
 import numpy as np
 from mesa import Agent
 
@@ -18,10 +16,8 @@ class CivilianAgent(Agent):
 
         self._known_exits = known_exits
         self._discarded_exits = set()
-        self._strategy = "random"
         self._willingness_to_follow_steward = random.uniform(0, 1)
         self._age = random.randrange(15, 65)
-        # self._gender = random.choice(["M", "F"])  not used yet. Maybe for later. Gender can affect speed (see papers)
         self._weight = random.uniform(40, 100)
         self._goal = None
         self._interacted_with = []
@@ -29,7 +25,6 @@ class CivilianAgent(Agent):
         self._visual_range = self.calculate_visual_range(self._age)
         self._speed = self.calculate_speed(self._visual_range, self._weight)
         self._observed_fire = set()
-        # self._observed_wall = set()
         self._being_risky = random.randrange(0, 2)
         self._info_exchange = self.model.civil_info_exchange
         self.last_pos = None
@@ -63,7 +58,6 @@ class CivilianAgent(Agent):
         print("Agent ", self.unique_id)
         print('-' * 20)
         print("Known exits: ", self._known_exits)
-        print("Strategy: ", self._strategy)
         print("Willingness to follow steward: ", self._willingness_to_follow_steward)
         print("Speed (m/s): ", self._speed)
         print("Age (years): ", self._age)
