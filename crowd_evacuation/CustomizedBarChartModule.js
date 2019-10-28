@@ -9,33 +9,17 @@ var BarChartModule = function(fields, canvas_width, canvas_height, sorting, sort
 
     // Create the tag:
     var svg_tag = "<svg width='" + canvas_width + "' height='" + canvas_height + "' ";
-    svg_tag += "style='border:1px solid; padding-left:10px'></svg>";
+    svg_tag += "style='border:1px solid; padding-left:10px; margin-bottom:30px'></svg>";
     // Append it to #elements
     var svg_element = $(svg_tag)[0];
     chart_div.append(svg_element);
 
-    //create the legend
-    var legend_tag = "<div class='legend'></div>";
-    var legend_element = $(legend_tag)[0];
-    chart_div.append(legend_element);
+    var categories = ["Exit (0, 5)", "Exit (0, 25)", "Exit (0, 45)", "Exit (49, 14)", "Exit (49, 15)", "Exit (49, 16)"]
 
-    var legend = d3.select(legend_element)
-        .attr("style","display:block;width:"
-            + canvas_width + "px;text-align:center")
-
-    legend.selectAll("span")
-        .data(fields)
-        .enter()
-        .append("span")
-        .html(function(d){
-            return "<span style='color:" + d["Color"] +";'> &#11044;</span>" + "&nbsp;" +
-            d["Label"].replace(" ", "&nbsp;")
-        })
-        .attr("style", "padding-left:10px;padding-right:10px")
 
     // setup the d3 svg selection
     var svg = d3.select(svg_element)
-    var margin = {top: 20, right: 20, bottom: 30, left: 40}
+    var margin = {top: 80, right: 20, bottom: 30, left: 40}
     var width = +svg.attr("width") - margin.left - margin.right
     var height = +svg.attr("height") - margin.top - margin.bottom
     var g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -53,22 +37,32 @@ var BarChartModule = function(fields, canvas_width, canvas_height, sorting, sort
     var chart = g.append("g")
     var axisBottom = g.append("g")
     var axisLeft = g.append("g")
-    var title = g.append("text")
+    var titleChart = g.append("text")
     var yAxisLabel = g.append("text")
+    var categoryLabel = chart.append("text")
 
 
     axisBottom
         .attr("class", "axis")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x0));
+        .call(d3.axisBottom(x0))
+
+    var yName = d3.scaleBand()
+        .domain(categories)
+        .range([15, width - 60])
+    g.append("g")
+        .style("font-size", "14px")
+        .attr("transform", "translate(20," + (height+10) + ")")
+        .call(d3.axisBottom(yName).tickSize(0))
+        .select(".domain").remove()
 
     axisLeft
         .attr("class", "axis")
         .call(d3.axisLeft(y).ticks(null, "s"));
 
-    title
+    titleChart
         .attr("x", (width / 2))
-        .attr("y", (height - (height - 8)) )
+        .attr("y", -5 - (margin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "14px")
         .style("font-family", "Helvetica")
@@ -80,7 +74,6 @@ var BarChartModule = function(fields, canvas_width, canvas_height, sorting, sort
         .attr("text-anchor", "end")
         .attr("transform", "rotate(-90)")
         .text("Number of agents");
-
 
     //Render step
     this.render = function(data){
@@ -124,30 +117,39 @@ var BarChartModule = function(fields, canvas_width, canvas_height, sorting, sort
         var rects = chart
             .selectAll("g")
             .data(data)
-            .enter().append("g")
-                .attr("transform", function(d, i) { return "translate(" + x0(i) + ",0)"; })
-            .selectAll("rect")
+            .enter()
+                .append("g")
+                    .attr("transform", function(d, i) { return "translate(" + x0(i) + ",0)"; })
 
-        rects
+        //  add a rectangle to the chart
+        rects.selectAll("rect")
             .data(function(d) {
                 return keys.map(function(key) {
                     return {key: key, value: d[key]};
                 });
             })
             .enter()
-                .append("rect")
-                    .attr("x", function(d) { return x1(d.key); })
-                    .attr("width", x1.bandwidth())
-                    .attr("fill", function(d) { return colorScale(d.key); })
-                    .attr("y", function(d) { return Math.min(y(d.value),y(0)); })
-                    .attr("height", function(d) { return Math.abs(y(d.value) - y(0)); })
-                    .attr("stroke", "black")
-                    .style("stroke-width", 2)
-                .append("title")
-                    .text(function (d) { return d.value; })
+                .append("g")
+                    .append("rect")
+                        .attr("x", function(d) { return x1(d.key); })
+                        .attr("width", x1.bandwidth())
+                        .attr("fill", function(d) { return colorScale(d.key); })
+                        .attr("y", function(d) { return Math.min(y(d.value),y(0)); })
+                        .attr("height", function(d) { return Math.abs(y(d.value) - y(0)); })
+                        .attr("stroke", "black")
+                        .style("stroke-width", 2)
+
+         //  add quantity label to each rectangle
+        rects.selectAll("g")
+	         .append("text")
+	            .attr("x", function(d) { return x1(d.key)  + x1.bandwidth()/2 })
+	            .attr("y", function(d) { return Math.min(y(d.value),y(0))-5; })
+	            .style("font-weight", "900")
+	            .text(function (d) { return d.value; })
 
 
-        //Update chart
+
+        //Update chart rectangles
         chart
             .selectAll("g")
             .data(data)
@@ -159,8 +161,21 @@ var BarChartModule = function(fields, canvas_width, canvas_height, sorting, sort
             })
             .attr("y", function(d) { return Math.min(y(d.value),y(0)); })
             .attr("height", function(d) { return Math.abs(y(d.value) - y(0)); })
-            .select("title")
-                .text(function (d) { return d.value; })
+
+         //Update chart quantity labels
+        chart
+            .selectAll("g")
+            .data(data)
+            .selectAll("text")
+            .data(function(d) {
+                return keys.map(function(key) {
+                    return {key: key, value: d[key]};
+                });
+            })
+            .attr("x", function(d) { return x1(d.key) + x1.bandwidth()/2; })
+            .attr("y", function(d) { return Math.min(y(d.value),y(0))- 5; })
+            .style("font-weight", "900")
+            .text(function (d) { return d.value; })
     }
 
     this.reset = function(){

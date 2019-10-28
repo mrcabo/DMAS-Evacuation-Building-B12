@@ -34,20 +34,6 @@ class StatisticsTitle(TextElement):
         return self.text
 
 
-class StatisticsText(TextElement):
-    def __init__(self):
-        pass
-
-    def render(self, model):
-        text = ""
-        count_agents = {}
-        exit_list = [agent._exit_point for agent in model.agents_saved]
-        for exit_pos in model.pos_exits:
-            count_agents[exit_pos] = exit_list.count(exit_pos)
-            text = text + "Number of agents saved through exit {} is: {}<br>".format(exit_pos, count_agents[exit_pos])
-        return text
-
-
 def agent_portrayal(agent):
     """
     Determines how an agent will be drawn in the grid
@@ -124,7 +110,6 @@ introduction = IntroductionText()
 grid = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 warnings = WarningUI()
 title_statistics = StatisticsTitle("<h2 style='margin-top:50px'>Statistics</h2><br>")
-statistics = StatisticsText()
 
 model_legend = '''
  <fieldset>
@@ -158,7 +143,7 @@ model_params = {
 }
 
 server = ModularServer(EvacuationModel,
-                       [introduction, warnings, grid, title_statistics,  line_chart, exits_barchart, statistics],
+                       [introduction, warnings, grid, title_statistics,  line_chart, exits_barchart],
                        "Evacuation model",
                        model_params)
 server.port = 8521
