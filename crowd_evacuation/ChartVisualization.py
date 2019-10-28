@@ -3,7 +3,7 @@
 Chart Module
 ============
 
-Module for drawing live-updating line charts using Charts.js
+Based on mesa chart module
 
 """
 import json
@@ -33,9 +33,6 @@ class ChartModule(VisualizationElement):
     Example:
         schelling_chart = ChartModule([{"Label": "happy", "Color": "Black"}],
                                       data_collector_name="datacollector")
-
-    TODO:
-        Have it be able to handle agent-level variables as well.
 
         More Pythonic customization; in particular, have both series-level and
         chart-level options settable in Python, and passed to the front-end

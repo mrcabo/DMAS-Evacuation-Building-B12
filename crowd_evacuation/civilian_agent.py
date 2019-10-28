@@ -67,6 +67,9 @@ class CivilianAgent(Agent):
         print()
         print()
 
+    def attr_to_list(self):
+        return self.unique_id, self._age, self._weight, self._visual_range, self._speed, self._being_risky
+
     def step(self):
         temp_last_pos = self.pos
 

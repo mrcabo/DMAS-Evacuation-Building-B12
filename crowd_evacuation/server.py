@@ -2,6 +2,7 @@ from mesa.visualization.ModularVisualization import ModularServer
 from .model import EvacuationModel
 from mesa.visualization.modules import CanvasGrid
 from crowd_evacuation.ChartVisualization import ChartModule
+from crowd_evacuation.BarChartVisualization import BarChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 from mesa.visualization.modules import TextElement
 
@@ -23,6 +24,14 @@ class WarningUI(TextElement):
     def render(self, model):
         text = '<font color="red">' + model.warning_UI + '</font>'
         return text
+
+
+class StatisticsTitle(TextElement):
+    def __init__(self, text):
+        self.text = text
+
+    def render(self, model):
+        return self.text
 
 
 def agent_portrayal(agent):
@@ -86,10 +95,21 @@ def agent_portrayal(agent):
 
 line_chart = ChartModule([{"Label": "Agents killed", "Color": "red"},
                           {"Label": "Agents saved", "Color": "green"}])
+labels = [(0, 5), (0, 25), (0, 45), (49, 14), (49, 15),
+          (49, 16)]  # hardcoded for now, will not work if exits are changed
+exits_barchart = BarChartModule([{"Label": "Exit {}".format(labels[0]), "Color": "green"},
+                                 {"Label": "Exit {}".format(labels[1]), "Color": "green"},
+                                 {"Label": "Exit {}".format(labels[2]), "Color": "green"},
+                                 {"Label": "Exit {}".format(labels[3]), "Color": "green"},
+                                 {"Label": "Exit {}".format(labels[4]), "Color": "green"},
+                                 {"Label": "Exit {}".format(labels[5]), "Color": "green"}])
+# demographics_agents_perished = PieChartModule([{},
+#                                                {}])
 
 introduction = IntroductionText()
 grid = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 warnings = WarningUI()
+title_statistics = StatisticsTitle("<h2 style='margin-top:50px'>Statistics</h2><br>")
 
 model_legend = '''
  <fieldset>
@@ -115,7 +135,7 @@ model_params = {
     "fire_y": UserSettableParameter('slider', "Fire starting point (y-coordinate)", 1, 1, 48, 1,
                                     description="Fire starting point (y-coordinate)"),
     "civil_info_exchange": UserSettableParameter('checkbox', 'Information exchange between civilians', value=True,
-                                           description="Choose whether civilians will exchange information with each other"),
+                                                 description="Choose whether civilians will exchange information with each other"),
     "Legend": UserSettableParameter('static_text', value=model_legend),
 
     "width": 50,
@@ -123,7 +143,7 @@ model_params = {
 }
 
 server = ModularServer(EvacuationModel,
-                       [introduction, warnings, grid, line_chart],
+                       [introduction, warnings, grid, title_statistics,  line_chart, exits_barchart],
                        "Evacuation model",
                        model_params)
 server.port = 8521
