@@ -96,7 +96,7 @@ class CivilianAgent(Agent):
 
         self._determine_goal()
         if self._goal is None:
-            self._move_random_dir(possible_steps, surrounding_agents)
+            self._movement_of_evacuation(possible_steps, surrounding_agents)
         else:
             # Set as non_walkable the nodes in the graph that contain other people or fire hazards.
             non_walkable = set()
@@ -116,7 +116,7 @@ class CivilianAgent(Agent):
                 path = path_finding.find_path(self.model.graph, self.pos, self._goal, non_walkable=non_walkable)
                 if path is None:
                     self._discarded_exits.add(self._goal)
-                self._move_random_dir(possible_steps, surrounding_agents)
+                self._movement_of_evacuation(possible_steps, surrounding_agents)
         self.last_pos = temp_last_pos
         self.walks.append(self.pos)
 
@@ -143,7 +143,7 @@ class CivilianAgent(Agent):
             else:
                 break
 
-    def _move_random_dir(self, possible_steps, surrounding_agents):
+    def _movement_of_evacuation(self, possible_steps, surrounding_agents):
 
         if possible_steps:
             # If agent can see any wall, they try to walking along the wall
