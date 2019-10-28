@@ -1,6 +1,4 @@
 import random
-from copy import copy
-
 import numpy as np
 from mesa import Agent
 
@@ -18,10 +16,8 @@ class CivilianAgent(Agent):
 
         self._known_exits = known_exits
         self._discarded_exits = set()
-        self._strategy = "random"
         self._willingness_to_follow_steward = random.uniform(0, 1)
         self._age = random.randrange(15, 65)
-        # self._gender = random.choice(["M", "F"])  not used yet. Maybe for later. Gender can affect speed (see papers)
         self._weight = random.uniform(40, 100)
         self._goal = None
         self._interacted_with = []
@@ -29,10 +25,10 @@ class CivilianAgent(Agent):
         self._visual_range = self.calculate_visual_range(self._age)
         self._speed = self.calculate_speed(self._visual_range, self._weight)
         self._observed_fire = set()
-        # self._observed_wall = set()
         self._being_risky = random.randrange(0, 2)
         self._info_exchange = self.model.civil_info_exchange
         self.last_pos = None
+        self.walks = []
 
     def calculate_visual_range(self, age):
         """
@@ -62,7 +58,6 @@ class CivilianAgent(Agent):
         print("Agent ", self.unique_id)
         print('-' * 20)
         print("Known exits: ", self._known_exits)
-        print("Strategy: ", self._strategy)
         print("Willingness to follow steward: ", self._willingness_to_follow_steward)
         print("Speed (m/s): ", self._speed)
         print("Age (years): ", self._age)
@@ -76,7 +71,8 @@ class CivilianAgent(Agent):
         return self.unique_id, self._age, self._weight, self._visual_range, self._speed, self._being_risky
 
     def step(self):
-        self.last_pos = self.pos
+        temp_last_pos = self.pos
+
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
 
@@ -100,7 +96,7 @@ class CivilianAgent(Agent):
 
         self._determine_goal()
         if self._goal is None:
-            self._move_random_dir(possible_steps, surrounding_agents)
+            self._movement_of_evacuation(possible_steps, surrounding_agents)
         else:
             # Set as non_walkable the nodes in the graph that contain other people or fire hazards.
             non_walkable = set()
@@ -120,7 +116,9 @@ class CivilianAgent(Agent):
                 path = path_finding.find_path(self.model.graph, self.pos, self._goal, non_walkable=non_walkable)
                 if path is None:
                     self._discarded_exits.add(self._goal)
-                self._move_random_dir(possible_steps, surrounding_agents)
+                self._movement_of_evacuation(possible_steps, surrounding_agents)
+        self.last_pos = temp_last_pos
+        self.walks.append(self.pos)
 
     def decide_move_action(self, path):
         """
@@ -145,21 +143,26 @@ class CivilianAgent(Agent):
             else:
                 break
 
-    def _move_random_dir(self, possible_steps, surrounding_agents):
-        # TODO: sohyung can you add a brief description of what each if-else clause does?
+    def _movement_of_evacuation(self, possible_steps, surrounding_agents):
+
         if possible_steps:
+            # If agent can see any wall, they try to walking along the wall
             if any(isinstance(agent, WallAgent) for agent in surrounding_agents):
-                # find the closest wall to walk along
+                # firstly, agent pick the closest wall agent among the all visible walls
+                # and compute the distance from the wall
                 surrounding_walls = list(filter(lambda a: isinstance(a, WallAgent), surrounding_agents))
                 closest_wall = self._find_closest_agent(surrounding_walls)
                 distance_from_wall = self._absolute_distance(self.pos, closest_wall.pos)
 
+                # select cells that are just as close or closer to a wall than where we are standing right now
                 next_possible_steps = []
                 for step in possible_steps:
                     shortest_dis_to_wall, _ = self._calculate_distance_to_closest_agent(step, surrounding_walls)
+                    # if the next possible step's distance between walls
                     if shortest_dis_to_wall <= distance_from_wall and step != self.last_pos:
                         next_possible_steps.append(step)
-                # Now, pick one position to move
+
+                # Now, pick one position to move :
                 # If they saw fire before they try to move far away from the fire
                 if self._observed_fire and next_possible_steps:
                     closest_fire = self._find_closest_point(self._observed_fire)
@@ -168,13 +171,17 @@ class CivilianAgent(Agent):
                         if distance_from_fire <= self._absolute_distance(coords, closest_fire):
                             self.model.grid.move_agent(self, coords)
                             break
+                # if there is no fire around them OR agent didn't see the fire yet,
+                # they just walk along wall in random direction
                 else:
-                    self.model.grid.move_agent(self, random.choice(possible_steps))
+                    random_cell = random.choice(next_possible_steps if next_possible_steps else possible_steps)
+                    self.model.grid.move_agent(self, random_cell)
 
-            # When agent see wall, they try to walk along the wall
+            # If agent don't see any wall and see fire, run away opposite side of the closest fire
             elif any(isinstance(agent, FireAgent) for agent in surrounding_agents):
                 closest_fire = self._find_closest_agent(filter(lambda a: isinstance(a, FireAgent), surrounding_agents))
                 self._move_away_from_fire(closest_fire)
+            # ELSE, they just walk randomly.
             else:
                 self.model.grid.move_agent(self, random.choice(possible_steps))
 
