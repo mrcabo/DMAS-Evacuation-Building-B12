@@ -27,6 +27,8 @@ def get_list_dead_agents(model):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Simulates evacuation of a building')
+    parser.add_argument('--filename', type=str, required=True,
+                        help='The name of the file where the results will be saved')
     parser.add_argument('--n_civilians', type=int, default=200,
                         help='Maximum number of civilians for the batch run. It will run experiments from 100 civilian '
                              'to n_civilians')
@@ -35,16 +37,19 @@ def parse_arguments():
     parser.add_argument('--n_stewards', type=int, default=4,
                         help='Maximum number of stewards for the batch run. It will run experiments from 100 civilian '
                              'to n_civilians')
+    parser.add_argument('--step_stewards', type=int, default=1,
+                        help='The step size when iterating from 0 to n_stewards')
     parser.add_argument('--info_exchange', type=bool, default=True,
                         help='If civilians will exchange information or not')
     parser.add_argument('--fire_init', type=int, nargs='+', default=(1, 1),
                         help='Initial coordinates of the fire hazard. First x-coordinate then y-coordinate')
     args = parser.parse_args()
-    return args.n_civilians, args.step_civilians, args.n_stewards, args.info_exchange, tuple(args.fire_init)
+    return (args.filename, args.n_civilians, args.step_civilians, args.n_stewards, args.step_stewards,
+            args.info_exchange, tuple(args.fire_init))
 
 
 if __name__ == '__main__':
-    n_civilians, step_civilians, n_stewards, info_exchange, fire_init = parse_arguments()
+    filename, n_civilians, step_civilians, n_stewards, step_stewards, info_exchange, fire_init = parse_arguments()
     fixed_params = {
         "civil_info_exchange": info_exchange,
         "fire_x": fire_init[0],
@@ -52,7 +57,7 @@ if __name__ == '__main__':
     }
     variable_params = {
         "N": range(100, n_civilians, step_civilians),
-        "K": range(0, n_stewards, 1),
+        "K": range(0, n_stewards, step_stewards),
     }
 
     # Create dictionary where the diagnosis probabilities will be tracked
@@ -85,4 +90,4 @@ if __name__ == '__main__':
     if not batch_dir.exists():
         Path.mkdir(batch_dir)
     run_data = batch_run.get_model_vars_dataframe()
-    run_data.to_csv(path_or_buf=(batch_dir / "my_batch_data.csv"))
+    run_data.to_csv(path_or_buf=(batch_dir / filename))
