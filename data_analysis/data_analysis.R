@@ -34,7 +34,7 @@ ggplot(fire_1_true ,aes(x=num_civilians, y=mean)) +
   geom_point(aes(colour=num_stewards), size=2.5) +
   geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), colour="red", width=.3) +
   theme(text = element_text(size=15)) +
-  labs(x="Number of people", y=paste("Average number of people alive"), col="Number of stewards") +
+  labs(x="Number of agents", y=paste("Average number of agents alive"), col="Number of stewards") +
   ggtitle("Fire starts at (1,1) - Civilians Exchange Information")
 
 
@@ -45,7 +45,7 @@ ggplot(fire_1_false ,aes(x=num_civilians, y=mean)) +
   geom_point(aes(colour=num_stewards), size=2.5) +
   geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), colour="red", width=.3) +
   theme(text = element_text(size=15)) +
-  labs(x="Number of people", y=paste("Average number of people alive"), col="Number of stewards") +
+  labs(x="Number of agents", y=paste("Average number of agents alive"), col="Number of stewards") +
   ggtitle("Fire starts at (1,1) - Civilians Don't Exchange Information")
 
 fire_47_true <- alive_civilians[which(alive_civilians$fire_x==47 & alive_civilians$info_exchange=="True"),]
@@ -55,7 +55,7 @@ ggplot(fire_47_true ,aes(x=num_civilians, y=mean)) +
   geom_point(aes(colour=num_stewards), size=2.5) +
   geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), colour="red", width=.3) +
   theme(text = element_text(size=15)) +
-  labs(x="Number of people", y=paste("Average number of people alive"), col="Number of stewards") +
+  labs(x="Number of agents", y=paste("Average number of agents alive"), col="Number of stewards") +
   ggtitle("Fire starts at (47,15) - Civilians Exchange Information")
 
 fire_47_false <- alive_civilians[which(alive_civilians$fire_x==47 & alive_civilians$info_exchange=="False"),]
@@ -65,6 +65,6 @@ ggplot(fire_47_false ,aes(x=num_civilians, y=mean)) +
   geom_point(aes(colour=num_stewards), size=2.5) +
   geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), colour="red", width=.3) +
   theme(text = element_text(size=15)) +
-  labs(x="Number of people", y=paste("Average number of people alive"), col="Number of stewards") +
+  labs(x="Number of agents", y=paste("Average number of agents alive"), col="Number of stewards") +
   ggtitle("Fire starts at (47,15) - Civilians Don't Exchange Information")
 
