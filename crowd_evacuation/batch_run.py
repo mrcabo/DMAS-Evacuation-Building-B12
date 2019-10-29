@@ -29,19 +29,19 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Simulates evacuation of a building')
     parser.add_argument('--filename', type=str, required=True,
                         help='The name of the file where the results will be saved')
-    parser.add_argument('--n_civilians', type=int, default=200,
+    parser.add_argument('--n_civilians', type=int, default=501,
                         help='Maximum number of civilians for the batch run. It will run experiments from 100 civilian '
                              'to n_civilians')
     parser.add_argument('--step_civilians', type=int, default=50,
                         help='The step size when iterating from 100 to n_civilians')
-    parser.add_argument('--n_stewards', type=int, default=4,
+    parser.add_argument('--n_stewards', type=int, default=21,
                         help='Maximum number of stewards for the batch run. It will run experiments from 100 civilian '
                              'to n_civilians')
-    parser.add_argument('--step_stewards', type=int, default=1,
+    parser.add_argument('--step_stewards', type=int, default=5,
                         help='The step size when iterating from 0 to n_stewards')
-    parser.add_argument('--info_exchange', type=bool, default=True,
+    parser.add_argument('--info_exchange', type=bool, default=False,
                         help='If civilians will exchange information or not')
-    parser.add_argument('--fire_init', type=int, nargs='+', default=(1, 1),
+    parser.add_argument('--fire_init', type=int, nargs='+', default=(47, 15),
                         help='Initial coordinates of the fire hazard. First x-coordinate then y-coordinate')
     args = parser.parse_args()
     return (args.filename, args.n_civilians, args.step_civilians, args.n_stewards, args.step_stewards,
