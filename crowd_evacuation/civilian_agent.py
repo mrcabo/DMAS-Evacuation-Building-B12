@@ -20,8 +20,7 @@ class CivilianAgent(Agent):
         self._age = random.randrange(15, 65)
         self._weight = random.uniform(40, 100)
         self._goal = None
-        self._interacted_with = []
-        self._exit_point = (None, None)  # a tuple that stores the exit of the agent
+        self._exit_point = (None, None)
         self._visual_range = self.calculate_visual_range(self._age)
         self._speed = self.calculate_speed(self._visual_range, self._weight)
         self._observed_fire = set()
@@ -53,31 +52,18 @@ class CivilianAgent(Agent):
             speed = 4  # else, the speed is the maximum speed which is set to 4
         return speed
 
-    def print_attributes(self):
-        print('-' * 20)
-        print("Agent ", self.unique_id)
-        print('-' * 20)
-        print("Known exits: ", self._known_exits)
-        print("Willingness to follow steward: ", self._willingness_to_follow_steward)
-        print("Speed (m/s): ", self._speed)
-        print("Age (years): ", self._age)
-        print("Size (kg): ", self._weight)
-        print("Closest exit: ", self._goal)
-        print("Interacted with: ", self._interacted_with)
-        print()
-        print()
-
     def attr_to_list(self):
         return self.unique_id, self._age, self._weight, self._visual_range, self._speed, self._being_risky
 
     def step(self):
+        # Remember the previous position
         temp_last_pos = self.pos
 
         # First, an agent should look around for the surrounding agents & possible moving positions.
         surrounding_agents, possible_steps, contacting_objects = self._looking_around()
 
         for surrounding_agent in surrounding_agents:
-            # As perceptual memory of Civil_agent, they will remember the location of observed fire.
+            # As perceptual memory of Civil_agent, they remember the location of observed fire.
             # Note, depending on the agent's level of being risky,
             # his walkable distance/range from fire during moving is decided.
             if isinstance(surrounding_agent, FireAgent):
@@ -94,6 +80,7 @@ class CivilianAgent(Agent):
             if self._info_exchange and isinstance(surrounding_agent, CivilianAgent):
                 self._interact(surrounding_agent)
 
+        # try to run towards the goal exit
         self._determine_goal()
         if self._goal is None:
             self._movement_of_evacuation(possible_steps, surrounding_agents)
@@ -117,6 +104,7 @@ class CivilianAgent(Agent):
                 if path is None:
                     self._discarded_exits.add(self._goal)
                 self._movement_of_evacuation(possible_steps, surrounding_agents)
+        # update previous position and remember the locations where agent walk
         self.last_pos = temp_last_pos
         self.walks.append(self.pos)
 
@@ -144,7 +132,10 @@ class CivilianAgent(Agent):
                 break
 
     def _movement_of_evacuation(self, possible_steps, surrounding_agents):
-
+        """
+          :param  possible_steps
+          :return: determines where the agents have to move and if the agent have been saved
+          """
         if possible_steps:
             # If agent can see any wall, they try to walking along the wall
             if any(isinstance(agent, WallAgent) for agent in surrounding_agents):
@@ -199,8 +190,7 @@ class CivilianAgent(Agent):
         but it could be a more complex function that includes human psychology (maybe you go towards a known exit,
         instead of a closer one..)
 
-        Returns:
-            (tuple): The coordinates where this agent is heading to.
+        :return (tuple): The coordinates where this agent is heading to.
 
         """
         exits = set(self._known_exits).difference(self._discarded_exits)
@@ -210,46 +200,10 @@ class CivilianAgent(Agent):
         else:
             self._goal = None
 
-    # _take_shortest_path: Takes the shortest path to the closest exit.
-    def _take_shortest_path(self, possible_steps):
-        distances = [self._absolute_distance(self._goal, x) for x in possible_steps]
-
-        # Find the closest available position to the closest exit around the agent and move the agent there.
-        while distances:
-            new_position = possible_steps[distances.index(min(distances))]
-            print(new_position)
-            if self.model.grid.is_cell_empty(new_position):
-                self.model.grid.move_agent(self, new_position)
-                break
-            del possible_steps[distances.index(min(distances))]
-            del distances[distances.index(min(distances))]
-
-    # _take_random_path: Takes a random path, ignoring the exit.
-    def _take_random_path(self, possible_steps):
-        # Find the closest available random position around the agent and move the agent there.
-        while possible_steps:
-            new_position = self.random.choice(possible_steps)
-            if self.model.grid.is_cell_empty(new_position):
-                self.model.grid.move_agent(self, new_position)
-                break
-            del possible_steps[possible_steps.index(new_position)]
-
-    def _reached_exit(self):
-        """
-        Returns true when agent is in the Von Neumann neighborhood (exclude diagonals) of an exit
-
-        Returns:
-            (bool): if the agent has been saved or not
-        """
-        for exit_neighbour in self.model.grid.get_neighborhood(self._goal, moore=True):
-            if self.pos == exit_neighbour:
-                return True
-        return False
-
     def _find_closest_agent(self, agents):
         """
-        :param  agents
-        :return: the closest agent to the agent
+        :param  agents:
+        :return: the closest agent to the agent:
         """
         min_distance = 10000
         closest_agent = None
@@ -262,8 +216,8 @@ class CivilianAgent(Agent):
 
     def _find_closest_point(self, points):
         """
-        :param  points
-        :return: the closest agent to the agent
+        :param  points:
+        :return: the location of closest agent:
         """
         min_distance = 10000
         closest_agent = None
@@ -274,35 +228,11 @@ class CivilianAgent(Agent):
                 closest_agent = point
         return closest_agent
 
-    def _find_exit(self, surrounding_agents):
-        """
-        :param  surrounding agents
-        :return: the closest exit to the agent in the surroundings
-        """
-        surrounding_exits = filter(lambda a: isinstance(a, ExitAgent), surrounding_agents)
-        return self._find_closest_agent(surrounding_exits)
-
-    def _find_closest_new_civilian(self, surrounding_agents):
-        civilians = [x for x in surrounding_agents if isinstance(x, CivilianAgent)]
-        while civilians:
-            closest_civilian = self._find_closest_agent(civilians)
-            if closest_civilian.unique_id not in self._interacted_with:
-                return closest_civilian
-            del civilians[civilians.index(closest_civilian)]
-        return None
-
-    def _cannot_move(self, possible_steps):
-        """
-        :param possible_steps:
-        :return: Returns True if there is no possible step the agent can make, otherwise returns False.
-        """
-        for x in possible_steps:
-            if self.model.grid.is_cell_empty(x):
-                return False
-        return True
-
-    # _interact: Interacts with neighboring agents to exchange information.
     def _interact(self, other):
+        """
+        :param  other agents:
+        Interacts with neighboring agents to exchange information.
+        """
         # if isinstance(other, CivilianAgent):  # Redundant
         # Exchange of information about known exits
         shared_known_exits = list(set(self._known_exits + other._known_exits))
@@ -320,6 +250,7 @@ class CivilianAgent(Agent):
     def _looking_around(self):
         """
         :return: surrounding agents, possible moving positions and obstacles
+        to observe the surrounding environments
         """
         # the list of objects surrounding an agent, 5x5 range, exclude the center where the agent is standing
         surrounding_agents = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False,
@@ -334,6 +265,10 @@ class CivilianAgent(Agent):
         return surrounding_agents, possible_steps, contacting_objects
 
     def _move_away_from_fire(self, fire):
+        """
+        :param  fire agent
+        to move away from the observed fire.
+        """
         # move towards the opposite direction of the fire
         my_x, my_y = self.pos
         opposite_direction = np.asarray([(my_x - fire.pos[0]), (my_y - fire.pos[1])])  # direction of escape
@@ -349,14 +284,10 @@ class CivilianAgent(Agent):
             self.model.grid.move_agent(self, new_pos)
 
     def _calculate_distance_to_closest_agent(self, point, agents):
+        """
+        :param  pos, agents
+        :return: the distance from the closest agent and the cloesest agent
+        """
         distance_agent_pairs = [(self._absolute_distance(point, agent.pos), agent) for agent in agents]
         distance_agent_pairs = sorted(distance_agent_pairs, key=lambda p: p[0])
         return distance_agent_pairs[0]
-        # Call it like this: distance, agent = self._calculate_distance_to_closest_agent(point, agents)
-
-    def _compare_distances(self, closest_wall, possible_steps):
-        distance_from_wall = self._absolute_distance(self.pos, closest_wall)
-        distance_agent_pairs = [(self._absolute_distance(step, closest_wall), step) for step in possible_steps]
-        distance_agent_pairs = sorted(distance_agent_pairs, key=lambda p: p[0])
-        if distance_from_wall >= distance_agent_pairs[0]:
-            return
