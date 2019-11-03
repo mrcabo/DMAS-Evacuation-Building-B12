@@ -38,9 +38,7 @@ class EvacuationModel(Model):
         self.civil_info_exchange = civil_info_exchange
         self.fire_initial_pos = (fire_x, fire_y)
         self.warning_UI = ""
-        # self.num_exits = 4 # number of exits : due to agents' pre-knowledge of exits
         self.agents_alive = N + K  # Agents alive and inside the building
-        # TODO: dictionary with the pos: people saved through that exit
         self.agents_saved = []  # Agents that managed to get out
         self.agents_killed = []  # Agents that perished during the evacuation
         self.grid = SingleGrid(height, width, False)
@@ -76,11 +74,9 @@ class EvacuationModel(Model):
         self.schedule.add(fire_agent)
         self.grid.place_agent(fire_agent, pos)
         # Create civilian agents
-        # middle_of_known_exits = self.pos_exits[2::5]
         for i in range(self.num_civilians):
 
-            # a civilian agent will know at least one exit from the pos_exits
-            # known_exits = random.sample(middle_of_known_exits, randint(1, len(middle_of_known_exits)))
+            # a civilian agent will know at least the main entrance to the building
             known_exits = self.pos_exits[-3:]
             a = CivilianAgent(i, self, known_exits)
 
@@ -99,7 +95,6 @@ class EvacuationModel(Model):
             self.grid.place_agent(a, (x, y))
 
         # Create steward agents
-        # middle_of_known_exits = self.pos_exits[2::5]
         for i in range(self.num_civilians, self.num_civilians + self.num_stewards):
 
             # a steward agent will know all exits.
@@ -148,10 +143,8 @@ class EvacuationModel(Model):
         """
         if reason == Reasons.SAVED:
             self.agents_saved.append(agent)
-            # self.agents_saved += 1
         elif reason == Reasons.KILLED_BY_FIRE:
             self.agents_killed.append(agent)
-            # self.agents_killed += 1
 
         self.agents_alive -= 1
         # TODO: Add a saved agents list. We will save everything and then we analyze what we want.
