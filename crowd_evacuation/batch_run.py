@@ -60,20 +60,6 @@ if __name__ == '__main__':
         "K": range(0, n_stewards, step_stewards),
     }
 
-    # Create dictionary where the diagnosis probabilities will be tracked
-    # dict_batch_collector = {}
-    # dict_batch_collector = {"Final_decision": get_final_decision}
-    # for i, disease in enumerate(MedicalModel.LIST_OF_DISEASES.values()):
-    #     disease_prob = partial(get_diagnosis_probabilities, i)
-    #     dict_batch_collector[disease] = disease_prob
-
-    # pos_exits = [(0, 5), (0, 25), (0, 45)]
-    # for i in range(3):
-    #     pos_exits.append((50 - 1, 14 + i))
-    # for exit_pos in pos_exits:
-    #     title = "Exit {}".format(exit_pos)
-    #     dict_batch_collector[title] = partial(count_agents_saved, exit_pos)
-
     batch_run = BatchRunner(
         EvacuationModel,
         variable_params,

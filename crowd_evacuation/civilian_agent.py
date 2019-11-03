@@ -266,7 +266,7 @@ class CivilianAgent(Agent):
 
     def _move_away_from_fire(self, fire):
         """
-        :param  fire agent
+        :param:  fire agent
         to move away from the observed fire.
         """
         # move towards the opposite direction of the fire
@@ -275,11 +275,9 @@ class CivilianAgent(Agent):
         # We normalize and find the unit vector of opposite_direction
         norm_dir = np.linalg.norm(opposite_direction)
         norm_dir = np.divide(opposite_direction, norm_dir)
-        # And move 1 cell towards that direction TODO : now we are using different speed..
         new_pos = norm_dir + (my_x, my_y)
         new_pos = np.round(new_pos).astype(int)
         new_pos = (new_pos[0], new_pos[1])  # cast array to tuple
-        # self.model.grid.get_neighbors(new_pos, moore=True, include_center=True, radius=0)
         if self.model.grid.is_cell_empty(new_pos):
             self.model.grid.move_agent(self, new_pos)
 

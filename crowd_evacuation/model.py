@@ -147,7 +147,6 @@ class EvacuationModel(Model):
             self.agents_killed.append(agent)
 
         self.agents_alive -= 1
-        # TODO: Add a saved agents list. We will save everything and then we analyze what we want.
         self.schedule.remove(agent)
         self.grid.remove_agent(agent)
 
