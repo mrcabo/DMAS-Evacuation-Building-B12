@@ -27,6 +27,12 @@ Creating a virtual environment is not necessary but recommended. If you don't ha
 ```bash
 sudo apt update && apt install -y python3-venv
 ```
+## Troubleshooting
+In case you have errors when running
+```
+python3 -m venv venv
+```
+try to run our simulation by skipping that command in the example provided above.
 ## Files
 
 * ``run.py``: Launches a model visualization server.
