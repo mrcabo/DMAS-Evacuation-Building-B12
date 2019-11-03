@@ -1,7 +1,4 @@
 from crowd_evacuation.civilian_agent import CivilianAgent
-from crowd_evacuation import path_finding
-from crowd_evacuation.reasons import Reasons
-
 
 # The stewards should shout information to people around them. We can simulate this by making them interact
 # with every civilian in their surroundings. Since the civilians already interact with every other civilian in
